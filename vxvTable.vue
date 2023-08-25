@@ -13,6 +13,9 @@
       vertical
     ></v-divider> -->
 
+
+
+
     <v-text-field
       v-model="search"
       prepend-inner-icon="mdi-magnify"
@@ -22,10 +25,16 @@
       density="comfortable"
       item-value="name"
     ></v-text-field>
+
+
+  
   </div>
 
+  <!-- :custom-filter="filterOnlyCapsText" -->
   <!-- Задаем таблицу -->
   <v-data-table 
+  
+
     :headers="headers"
     :items="desserts"
     item-value="name"
@@ -42,7 +51,13 @@
     items-per-page-text="Количество строк:"
 
   >
-
+    <template v-slot:top>
+      <v-text-field
+        v-model="search"
+        label="Search (UPPER CASE ONLY)"
+        class="pa-4"
+      ></v-text-field>
+    </template>
     <!-- fixed-footer -->
     <!-- Заполняем заголовоки колонок таблицы -->
     <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }" >
@@ -81,10 +96,10 @@
               <div class="flex-inner-right" >
 
                   <vxvDialog
-                    :items="dessertsColumn(column.key)"
+                    :importItems="dessertsColumn(column.key)"
                     :columnKey="column.key"
                     :columnTitle="column.title"
-                    :outputDataDialog="(value) => {return result = {[column.key]: value}}"
+                    :out="(value) => {return result = {[column.key]: value}}"
                     :class="Object.keys(resultAll).includes(column.key) & column.key !=[] ? `text-amber-accent-3` : null"
                     
                   />
@@ -150,11 +165,11 @@
       vxvDialog,
     },    
 
-    provide() {
-        return {
-          resultAll: this.resultAll,
-        }
-      },
+    // provide() {
+    //     return {
+    //       resultAll: this.resultAll,
+    //     }
+    //   },
 
     // props: {
       // items: {
@@ -165,17 +180,27 @@
 
     methods: {
       // @click.ctrl.exact="ctrlAndClick"
-    
-      querySelections (v) {
-          this.loading = true
-            // Simulated ajax query
-          setTimeout(() => {
-            this.items = this.itemsAll.filter(e => {
-              return (e || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1
-            })
-            this.loading = false
-          }, 500)
-      },
+
+                // filterOnlyCapsText (value, query, item) {
+                //         return value != null &&
+                //           query != null &&
+                //           typeof value === 'string' &&
+                //           value.toString().toLocaleUpperCase().indexOf(query) !== -1
+                //       },
+
+
+
+      // querySelections (v) {
+      //     this.loading = true
+      //       // Simulated ajax query
+      //     setTimeout(() => {
+      //       this.items = this.itemsAll.filter(e => {
+      //         return (e || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1
+      //       })
+      //       this.loading = false
+      //     }, 500)
+      // },
+
       toggleAll () {
         if (this.selected.length) {
           this.selected = []
@@ -214,7 +239,7 @@
     computed: {
       ctrlAndClick() {
         this.resultAll = {}
-        // this.outputDataDialog([])
+        // this.out([])
       },        
         testProvide() {
           return this.desserts.length
@@ -354,15 +379,7 @@
     },
   }
 
-// props: {
-//   title: String,
-//   likes: Number,
-//   isPublished: Boolean,
-//   commentIds: Array,
-//   author: Object,
-//   callback: Function,
-//   contactsPromise: Promise // или любой другой конструктор
-// }
+
 </script>
 
 <style >
