@@ -83,6 +83,7 @@
 
               <div class="flex-inner-right" >
                   <vxvDialog
+                    :RowsInCols="RowsInCols"
                     :importItems="dessertsColumn(column.key)"
                     :columnKey="column.key"
                     :columnTitle="column.title"
@@ -147,11 +148,13 @@
 
   </v-data-table>
   </v-card>
-  <!-- <v-card><pre>select : {{ select }}</pre></v-card> -->
-  <!-- <v-card><pre>columnItem фильтра в таблице: {{ columnItem }}</pre></v-card> -->
-  <v-card><pre>filterColumns фильтра в таблице: {{ filterColumns }}</pre></v-card>
-  <v-card><pre>tableRows : {{ tableRows }}</pre></v-card>
-  <v-card><pre>selectedRows фильтра в таблице: {{ selectedRows }}</pre></v-card>
+
+  <v-card><pre>tempvarFilter: {{ tempvarFilter }}</pre></v-card>
+  <!-- <v-card><pre>tableRows: {{ tableRows }}</pre></v-card> -->
+  <!-- <v-card><pre>selectedRows: {{ selectedRows }}</pre></v-card> -->
+  <!-- <v-card><pre>RowsInCols: {{ RowsInCols }}</pre></v-card> -->
+  <!-- <v-card><pre>columnItem: {{ columnItem }}</pre></v-card> -->
+  <v-card><pre>filterColumns: {{ filterColumns }}</pre></v-card>
   
 
 </template>
@@ -159,9 +162,10 @@
   // import { computed } from 'vue'
   import vxvDialog from '@/components/vxvTableDialog.vue';
   // import { VDataTable } from 'vuetify/labs/VDataTable'
-  
+
 
   export default {
+
     components: {
       vxvDialog,
     },    
@@ -187,15 +191,20 @@
     beforeMount () {
         this.TableRowsAfterSearch = this.loadTableRows
         this.tableRows = this.loadTableRows
+        this.RowsInCols = this.createRowsInCols
 
     },
 
     mounted () {
         // this.tableRows = this.loadTableRows
         // this.TableRowsAfterSearch = this.loadTableRows
+        
     },
 
-    methods: {
+  methods: {
+
+
+
       toggleAll () {
         if (this.selectedRows.length) {
           this.selectedRows = []
@@ -265,39 +274,6 @@
 
     },
 
-      // customfilter(v) {
-      //   this.tableRows = this.tableRows.filter(e => {
-      //     for (let i in e) {
-      //       if ((e[i] || '').toString().toLowerCase().includes((v || '').toString().toLowerCase()))
-      //         { 
-      //           console.log(e) 
-      //         return e }
-      //         // continue
-      //     }
-      //     })
-      // },
-//       customfilter (value, query, item) {
-//         let fil = null
-//         fil = value != null &&
-//                 query != null &&
-//                 value.toString().toLowerCase().indexOf(query) !== -1
-//         console.log(VDataTable.slotProps)
-
-// // this.select = []
-//         // console.log(item)
-//             if (fil) 
-//               {console.log(item)
-//               this.select.push(item)
-//               if (fil === null) {this.select = []}
-//               }
-//         return fil
-//             },
-
-
-// defaultFilter = (value, query, item) => {
-//   if (value == null || query == null) return -1;
-//   return value.toString().toLocaleLowerCase().indexOf(query.toString().toLocaleLowerCase());
-// };
 
 
 
@@ -353,58 +329,101 @@
 
 
 
-      columnItem(item) {
-      //   let itemKey = Object.keys(item)[0]
-      //   let vals = Object.values(item)[0]
-
-      //   this.filterColumns[itemKey] = vals
-      //   if(vals.length === 0) 
-      //     { delete this.filterColumns[itemKey] }
-
-      // // setTimeout(() => {  
-      //   if (vals.length === 0) {this.tableRows = this.loadTableRows}
-      //   else {this.tableRows = this.loadTableRows.filter((row) => {return vals.includes(row[itemKey])})}
-      // // }, 500)
-      
-
-
+    columnItem(item) {
+      // Определяем ключ и значение отправленное из диалога фильтра
       let itemKey = Object.keys(item)[0]
       let vals = Object.values(item)[0]
-
+      // Присваиваем в общий массив со всеми объектами из всех фильтров
       this.filterColumns[itemKey] = vals
-      this.tableRows = this.loadTableRows
-      if(vals.length === 0) 
-        {
-          delete this.filterColumns[itemKey] 
-        }
-      for (const [k, v] of Object.entries(this.filterColumns)) {
-          this.tableRows = this.tableRows.filter(e =>{
-            if (v.includes(e[k])) {return e}
-          })
+      // Если полученные значения от текущего фаильтра пустые, то удаляем запись в общем массиве фильтров
+      if(vals.length === 0) {delete this.filterColumns[itemKey]}
+      // Если массив всех фильтров пустой, то возвращаем все в исходное состояние
+      if(Object.values(this.filterColumns).length === 0) {
+        this.tableRows = this.loadTableRows
+        this.RowsInCols = this.createRowsInCols
+        this.tempvarFilter = {}        
       }
-      if(this.filterColumns === {}) {this.tableRows = this.loadTableRows}
+      else {
+        // Список всех индексов по всем фильтрам
+        let idxListfilter = []
+        //  Для каждого фильтра из общего массива
+        for (let [kf, valFilCol] of Object.entries(this.filterColumns)) {
+          idxListfilter = []
+          // Из полного списка строк в таблице фильтруем
+          this.tableRows = this.loadTableRows.filter(e => {if (valFilCol.includes(e[kf])) {return e}})  
+          for (let [ishodnameCol, ishodvals] of Object.entries(this.createRowsInCols)) {
+            for (const [iv, vv] of ishodvals.entries()) {
+              if (valFilCol.includes(vv) && !idxListfilter.includes(iv)) {idxListfilter.push(iv)}
+              }
+          }
+        }
+        console.log("idxListfilter = ", idxListfilter)
+
+        //  Корректируем массив, согласно полученным индексам
+        for (let [ishodnameCol, ishodvals] of Object.entries(this.createRowsInCols)) {
+          if (ishodnameCol != itemKey) {
+              let fil = ishodvals.filter((e, i) => {if (idxListfilter.includes(i)) {return ishodvals}})
+              this.tempvarFilter[ishodnameCol] = fil
+          } else {this.tempvarFilter[ishodnameCol] = this.RowsInCols[ishodnameCol]}
+        }
+
+        this.RowsInCols = this.tempvarFilter
+        // console.log("this.tempvarFilter = ", this.tempvarFilter)
+      }
+      
+      
+      
+      // else {
+      //   // Список всех индексов по всем фильтрам
+      //   let idxListfilter = []
+      //   //  Для каждого фильтра из общего массива
+      //   for (let [kf, valFilCol] of Object.entries(this.filterColumns)) {
+      //     // Из полного списка строк в таблице фильтруем
+      //     this.tableRows = this.loadTableRows.filter(e => {if (valFilCol.includes(e[kf])) {return e}})  
+      //     for (let [ishodnameCol, ishodvals] of Object.entries(this.createRowsInCols)) {
+      //       // for (const [iv, vv] of ishodvals.entries()) {
+      //       //   if (valFilCol.includes(vv)) {idxListfilter.push(iv)}
+      //       //   }
+      //     // console.log("ishodvals = ", ishodvals)
+      //     // console.log("valFilCol = ", valFilCol)
+      //           console.log("ishodnameCol === kf = ", ishodnameCol, kf, ishodnameCol === kf)
+          
+          
+      //     // if (ishodnameCol != itemKey) {
+      //         idxListfilter = ishodvals.filter((valIshod, idxIshod) => {
+      //             if (
+      //               ishodnameCol === itemKey &&
+      //               valFilCol.includes(valIshod)
+      //               ) {
+      //                 return idxIshod}
+      //               console.log("ishodnameCol === kf = ", ishodnameCol , kf)
+      //           })
+      //     // } else {this.tempvarFilter[ishodnameCol] = this.RowsInCols[ishodnameCol]}
+      //     // console.log("this.tempvarFilter = ", this.tempvarFilter)
+          
+      //     }
+      //   }
+        
+      //   // // Из полного списка строк в таблице фильтруем
+      //   // this.tableRows = this.loadTableRows.filter((e, i) => {if (idxListfilter.includes(i)) {return e}})  
+
+      //   //  Корректируем массив, согласно полученным индексам
+      //   // for (let [ishodnameCol, ishodvals] of Object.entries(this.createRowsInCols)) {
+      //   //   if (ishodnameCol != itemKey) {
+      //   //       let fil = ishodvals.filter((e, i) => {if (idxListfilter.includes(i)) {return ishodvals}})
+      //   //       this.tempvarFilter[ishodnameCol] = fil
+      //   //   } else {this.tempvarFilter[ishodnameCol] = this.RowsInCols[ishodnameCol]}
+      //   // }
+
+      //   this.RowsInCols = this.tempvarFilter
+      //   console.log("this.tempvarFilter = ", this.tempvarFilter)
+      // }
+    },
 
 
 
-
-
-        // for (const [itemKey, vals] of Object.entries(item)) {
-        //   this.filterColumns[itemKey] = vals
-        //   if(vals.length == 0) {
-        //     delete this.filterColumns[itemKey]
-        //     this.tableRows = this.loadTableRows
-        //     } 
-        //   else {
-        //     this.tableRows = this.loadTableRows.filter(
-        //     e => {return vals.includes(e[itemKey])})
-
-        //     this.selectedTableRows = this.selectedTableRows.filter(
-        //     e => {return vals.includes(e[itemKey])})
-        //     }
-        //   }
 
       
-      },
     },
 
     computed: {
@@ -417,6 +436,40 @@
         indeterminateState() {
           return this.selectedRows.length != 0 && this.selectedRows.length < this.tableRows.length? true : false
         },
+
+
+    // RowsInCols() {
+    //   // console.log("RowsInCols")
+    //   // const arr = []
+    //   // const items = this.loadTableRows
+    //   // const ColNameList = Object.keys(items[0])
+    //   // for(let col of ColNameList) {
+    //   //   let xxx = []; for(let e of items) {xxx.push(e[col])}
+    //   //   arr.push({[col]: xxx}) }
+    //   // return arr
+
+    //   console.log("RowsInCols")
+    //   const arr = {}
+    //   const items = this.loadTableRows
+    //   const ColNameList = Object.keys(items[0])
+    //   for(let col of ColNameList) {
+    //     let xxx = []; for(let e of items) {xxx.push(e[col])}
+    //     arr[col]= xxx
+    //     }
+    //   return arr
+    // },
+    createRowsInCols() {
+      console.log("RowsInCols")
+      const arr = {}
+      const items = this.loadTableRows
+      const ColNameList = Object.keys(items[0])
+      for(let col of ColNameList) {
+        let xxx = []; for(let e of items) {xxx.push(e[col])}
+        arr[col]= xxx
+        }
+      return this.RowsInCols = arr
+    },    
+
 
     },
 
@@ -438,6 +491,8 @@
         TableRowsAfterSearch: [],
 
         groupBy: [{ key: 'dairy', order: 'asc' }],
+        RowsInCols: [],
+        tempvarFilter: {},
 
 
         headers: [

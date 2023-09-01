@@ -36,16 +36,16 @@
 
 
   <v-card>
-    <vxvPoisk 
+    <!-- <vxvPoisk 
       :onChanged="valueChild => {return resPoisk = valueChild.id}"
       :selected="selected"
       :externalData="externalData"
-    />
-   <v-card>Родитель: {{ resPoisk }}</v-card>
+    /> -->
+   <!-- <v-card>Родитель: {{ resPoisk }}</v-card> -->
 
-<v-card class="d-flex">
+<!-- <v-card class="d-flex">
   <testBtnTogler class="d-flex"/>
-</v-card>
+</v-card> -->
   <vxvTable/>
   
   

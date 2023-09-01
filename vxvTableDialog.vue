@@ -7,15 +7,18 @@
       width="auto"
     >
       <template v-slot:activator="{ props }">
-        <v-btn icon="mdi-filter-variant" density="comfortable" variant="text" v-bind="props"></v-btn>
+        <v-btn  icon="mdi-filter-variant" density="comfortable" variant="text" v-bind="props"></v-btn>
       </template>
           
           <div > <!-- Контейнер -->
-              
               <!-- Заголовок диалогового окна -->
-              <div class="flex-container elevation-5 mb-2 bg-amber-accent-3" >
+              <div class="flex-container elevation-5 mb-2 bg-amber-accent-3" 
+                  style="display: flex; justify-content: space-between;"
+              >
                   <v-card-title >{{ columnTitle }}</v-card-title>
-                  <v-icon class="mr-2 " icon="mdi-filter-variant-remove" density="comfortable" variant="text"></v-icon>
+                  <v-btn icon="mdi-filter-variant-remove" density="comfortable" variant="text" 
+                    @click="clearChecedFilter"
+                  ></v-btn>
               </div>
               
               <v-card class="mx-auto" max-width="500">
@@ -31,9 +34,11 @@
                     :loading="loadField"
                     autofocus
                   ></v-text-field>  
-                                
+
+                        <!-- class="d-flex ma-0"         -->
                   <!-- Список значений по колонке -->
-                  <v-list select-strategy="classic" lines="one" class="ma-0 pa-0">
+                  <v-list select-strategy="classic" lines="one" class="ma-0 pa-0 bg-white"
+                  >
                     <v-list-item v-for="item in items" :key="item"
                         :value="item"
                         v-model="selected"
@@ -55,9 +60,10 @@
           </div> <!-- Контейнер -->
         </v-dialog>
       </v-row>
-      <!-- <pre>{{ result }}</pre> -->
-      <!-- <pre>searchItem: {{searchItem}}</pre> -->
-      <!-- <pre>Parent: {{countRow}}</pre> -->
+      <!-- <pre>selected = {{ selected }}</pre> -->
+      <!-- <pre>importItems: {{items}}</pre> -->
+      <!-- <pre>RowsInCols: {{RowsInCols[columnKey]}}</pre> -->
+      <!-- <pre>out: {{ $props.out }}</pre> -->
 
 </template>
 <script>
@@ -78,6 +84,10 @@
       },      
       importItems: {
         type: Array,
+        default: () =>  []
+      },
+      RowsInCols: {
+        type: Object,
         default: () =>  []
       },
       columnKey: {
@@ -101,64 +111,115 @@
     //   contactsPromise: Promise // или любой другой конструктор
     // }    
 
-    data () {
+
+data () {
       return {
         dialog: false,
         selected: [],
-        resultAll: {},
         items: [],
         search: null,
-        setTimeout: null,
+        // setTimeout: null,
         loadField: false,
       }
     },
 
+  beforeUpdate () {
+    // this.searchItem= this.items = this.importItems
+    this.searchItem= this.items = this.noDoobleInlist
+
+    // console.log("--------- ", this.RowsInCols[this.columnKey].length)
+    // let rrr = []
+    // for(let i of Object.values(this.RowsInCols)) {rrr.push(i.length)}
+    // console.log("rrr- ", rrr)
+    // console.log("----max()----- ", Math.max(...rrr))
+    // console.log("beforeUpdate")    
+  },
 
   mounted () {
-      if(this.resultAll[this.columnKey]) 
-        {this.selected = this.resultAll[this.columnKey]}
-      else {this.selected = []}
-   setTimeout(() => this.searchItem = this.importItems)
-   setTimeout(() => this.items = this.importItems)
+    // Запускается при загрузке страници
+        // this.searchItem= this.items = this.importItems
+        this.searchItem= this.items = this.noDoobleInlist
+    // console.log("mounted")    
+
   }, 
 
+  // beforeCreate() {
+  //   console.log("beforeCreate")    
+  // },
+  //  created() {
+  //   console.log("created")    
+  // },
+  //   beforeMount() {
+  //   console.log("beforeMount")    
+  // },
+  //   beforeMount() {
+  //   console.log("beforeMount")    
+  // },
+  //   activated() {
+  //   console.log("activated")
+  // },
+  //   deactivated() {
+  //   console.log("deactivated")
+  // },
+  //   beforeUnmount() {
+  //   console.log("beforeUnmount")
+  // },
+  // updated () {
+  //   console.log("updated")    
+  // },
 
-    methods: {
-      editSelected (val) {
-        if (!this.selected.includes(val)) {this.selected.push(val)} 
-        else {this.selected.splice(this.selected.indexOf(val), 1)}
-        this.out(this.selected) 
+
+  methods: {
+    editSelected (val) {
+      if (!this.selected.includes(val)) {this.selected.push(val)} 
+      else {this.selected.splice(this.selected.indexOf(val), 1)}
+      this.out(this.selected) 
+    },
+
+    clearChecedFilter() {
+      this.selected = []
+      this.out(this.selected)
+    },
+
+  },
+
+  computed: {
+      noDoobleInlist() {
+        // Перебираем список, исключая повторяющиеся значения
+        const arr = this.RowsInCols[this.columnKey]
+        let uniqueChars = arr.filter((element, index) => {
+            return arr.indexOf(element) === index;
+        })
+        return uniqueChars
       },    
-    },
 
-    computed: {
-
-    },
-    
+  // allSelected() {
+  //     console.log("--------- ", this.RowsInCols[this.columnKey].length)
+  // }
+  
+  },
     
   watch: {
-      // search (v) {
-      //   this.loading = true
-      //   // Simulated ajax query
-      //   setTimeout(() => {
-      //     this.searchItem = this.items.filter(e => {
-      //       return (e || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1
-      //     })
-      //     this.loading = false
-      //   }, 500)
-      // },
-      
-  search (val) {
-      this.loadField = true        
-      let res = this.searchItem.filter((element) => 
-            { return (element || '').toString().toLowerCase().indexOf((val || '').toLowerCase()) > -1} )
-      console.log(res)     
-      this.items = res
-      this.loadField = false
-
-
-  }
+    search (val) {
+        this.loadField = true
+        // setTimeout(() => {  
+        this.items = this.searchItem.filter((element) => 
+              { return (element || '').toString().toLowerCase().indexOf((val || '').toLowerCase()) > -1} )
+        // }, 500)
+        this.loadField = false
+    }
   }, 
-  }
+}
 
 </script>
+
+<style >
+.v-list-item--variant-text .v-list-item__overlay {
+  background: white;
+}
+.v-dialog > .v-overlay__content {
+  position: absolute;
+  top: 50px;
+  right: 0;
+}
+</style>
