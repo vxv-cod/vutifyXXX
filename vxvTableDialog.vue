@@ -42,7 +42,7 @@
                   <!-- checkbox-multiple-blank-outline -->
                   <v-btn  density="comfortable" variant="text" 
                     :icon="iconSelectAll"
-                    @click="clearChecedFilter"
+                    @click="selectsNullOrFull"
                   >
                     <v-tooltip activator="parent" location="end" text="Выбрать все"/>                  
                     <v-icon>{{iconSelectAll}}</v-icon>
@@ -235,8 +235,8 @@ data () {
 
     },
 
-    clearChecedFilter() {
-      console.log(this.selected.length, this.items.length)
+    selectsNullOrFull() {
+      console.log("this.selected.length = ", this.selected.length, "this.items.length = ", this.items.length)
       if (this.selected.length < this.items.length) {this.selected = this.items.slice(0)}  
       else {this.selected = []}
       // this.outSelectedFilter({[this.columnKey]: this.selected})
@@ -244,8 +244,8 @@ data () {
 
     myUpdateModelValue(bool){
       if (bool === false) {
-        this.outSelectedFilter({[this.columnKey]: this.selected});
         if(this.selected.length === 0) {this.selected = this.items.slice()};
+        this.outSelectedFilter({[this.columnKey]: this.selected});
       }
     },
 

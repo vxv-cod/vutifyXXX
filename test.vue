@@ -1,8 +1,10 @@
 <template >
   <!-- <v-card class="ma-5">createRowsInCols: {{ createRowsInCols }}</v-card> -->
+  <v-card class="ma-3">filterColumns: {{ filterColumns }}</v-card>
+
 
 <!-- <div class="spacing-playground pa-3 ma-3 elevation-5 bg-blue-grey-lighten-1"> -->
-<!-- <div class="pa-3 bg-blue-grey-lighten-1"> -->
+<!-- ? <div class="pa-3 bg-blue-grey-lighten-1"> -->
 <v-card class="pa-3" 
     :color="colorTabBody"
   >
@@ -40,7 +42,8 @@
     
 
   >
-  <!-- 
+  <!--
+    
     :group-by="groupBy" 
   -->
 
@@ -296,119 +299,64 @@
       let itemKey = Object.keys(item)[0].slice()
       let vals = Object.values(item)[0].slice()
 
-      // Присваиваем в общий массив со всеми объектами из всех фильтров
+      // Собираем объект из выбранных строк в фильтрах по столбцам
       this.filterColumns[itemKey] = vals
 
-      // Если массив всех фильтров пустой, то возвращаем все в исходное состояние
-      // Если полученные значения от текущего фаильтра пустые или выбраны все строки фильтра, 
-      // то удаляем запись в общем массиве фильтров
+      // Значение автовыбора всех строк в текущем фильтре
       this.selectAllFil[itemKey] = false
 
-      // if(vals.length === 0) {delete this.filterColumns[itemKey]}
+      // Если полученные значения от текущего фаильтра пустые или выбраны все строки фильтра, 
+      // то удаляем запись в общем массиве фильтров
 
-      if(vals.length === 0 || vals.length === this.noDoobleInlist(itemKey).length)
+      if(
+        vals.length === 0 
+        || vals.length === this.noDoobleInlist(itemKey).length
+      ) 
         {delete this.filterColumns[itemKey]}
 
-
-
-
+      // Если filterColumns пустой
       if(Object.values(this.filterColumns).length === 0) {
         this.RowsInCols = structuredClone(this.createRowsInCols)
-        // this.tempvarFilter = structuredClone(this.createRowsInCols)
         this.tableRows = this.loadTableRows
-
       }
+
+      // Если filterColumns одно или более имя колонки фильтра
       if(Object.values(this.filterColumns).length >= 1) {
-
-        // Список всех индексов по всем фильтрам
-          let idxListfilter = []
-          Object.entries(this.filterColumns).forEach(
-            ([key, vals]) => {
+          let idxListfilter = []  // Список всех индексов по всем фильтрам
+          Object.entries(this.filterColumns).forEach(([key, vals]) => {
               idxListfilter = []
-              // Из полного списка строк в таблице фильтруем
-              this.tableRows = this.loadTableRows.filter(e => {if (vals.includes(e[key])) {return e}})
+              this.createRowsInCols[key].forEach((vv, iv) => {
+                if (vals.includes(vv) && !idxListfilter.includes(iv)) {idxListfilter.push(iv)}
+              })
+          })
+          console.log("idxListfilter = ", idxListfilter);
 
-              this.createRowsInCols[key].forEach((vv, iv) => 
-                {if (vals.includes(vv) && !idxListfilter.includes(iv)) {
-                  idxListfilter.push(iv)
-
-                  }})
-            })
-        // console.log("idxListfilter = ", idxListfilter)
-
-
-        // //  Корректируем массив, согласно полученным индексам
+          // Из полного списка строк в таблице фильтруем те, которые есть в списке выбранных индексов
+          this.tableRows = this.loadTableRows.filter((e, i) => idxListfilter.includes(i) )
+          
+          //  Корректируем массив, согласно полученным индексам
           Object.entries(this.createRowsInCols).forEach(
             ([ishodnameCol, ishodvals]) => {
 
               if (ishodnameCol != itemKey) {
                 this.selectAllFil[ishodnameCol] = true
-                // this.tempvarFilter[ishodnameCol] = ishodvals.filter((e, i) => 
-                this.RowsInCols[ishodnameCol] = ishodvals.filter((e, i) => 
-                  {if (idxListfilter.includes(i)) {return ishodvals}}
-                  )
-                  // this.RowsInCols[ishodnameCol] = this.tempvarFilter[ishodnameCol].slice()
-
+                this.RowsInCols[ishodnameCol] = ishodvals.filter((e, i) => idxListfilter.includes(i) === true)
                 } 
-              else {
-              // console.table(this.tempvarFilter[ishodnameCol])
+              else {this.selectAllFil[ishodnameCol] = false}
+            }
+          )
 
-                this.selectAllFil[ishodnameCol] = false
-                // this.tempvarFilter[ishodnameCol] = this.RowsInCols[ishodnameCol].slice()
-              
-              // this.RowsInCols[ishodnameCol] = this.createRowsInCols[ishodnameCol]
-
-                }
-              // console.log("this.tempvarFilter = ", this.tempvarFilter)
-              
-              }
-            )
-
-
-      // console.log(Object.keys(this.filterColumns))
-      // console.log(Object.values(this.createRowsInCols["name"]))
       let key0 = Object.keys(this.filterColumns)[0]
+      console.log("111 = ", this.selectAllFil[key0]);
+      
       if(Object.values(this.filterColumns).length === 1 && itemKey != key0) {
-        // this.RowsInCols[key0] = vals.slice()
         this.selectAllFil[key0] = false
-        // this.RowsInCols[key0] = structuredClone(this.createRowsInCols[key0])
-        this.RowsInCols[key0] = this.createRowsInCols[key0].slice()
-      }
-      // console.table("keys = ", Object.values(this.RowsInCols))
-      // Не выводит полный список
-
-
-
-
+        let arr = this.createRowsInCols[key0].slice()
+        // this.RowsInCols[key0] = arr.filter((element, index) => arr.indexOf(element) === index)
       }
 
-          // let aaa = {
-          //   q: ['111','222','333'],
-          //   w: 'www',
-          //   e: 'eee',
-          // }
-          // console.log('aaa1 = ', aaa)
 
-          // let bbb = {}
-
-          // bbb.q = aaa.q.slice()
-          // //aaa.q = "888888"
-
-          // // bbb = structuredClone(aaa)
-          // console.log('bbb1 = ', bbb, bbb.q)
-         
-          // //bbb.q = "ffffffffff"
-          // bbb.q[1] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-          // console.log('aaa2 = ', aaa)
-          // console.log('bbb2 = ', bbb, bbb.q)      
-
-
-          // console.log('aaa3 = ', aaa)
-          // console.log('bbb3 = ', bbb)
-          
-
-    },
+    }},
       
     },
 
@@ -424,26 +372,6 @@
         },
 
 
-    // RowsInCols() {
-    //   // console.log("RowsInCols")
-    //   // const arr = []
-    //   // const items = this.loadTableRows
-    //   // const ColNameList = Object.keys(items[0])
-    //   // for(let col of ColNameList) {
-    //   //   let xxx = []; for(let e of items) {xxx.push(e[col])}
-    //   //   arr.push({[col]: xxx}) }
-    //   // return arr
-
-    //   console.log("RowsInCols")
-    //   const arr = {}
-    //   const items = this.loadTableRows
-    //   const ColNameList = Object.keys(items[0])
-    //   for(let col of ColNameList) {
-    //     let xxx = []; for(let e of items) {xxx.push(e[col])}
-    //     arr[col]= xxx
-    //     }
-    //   return arr
-    // },
     createRowsInCols() {
       const arr = {}
       const items = this.loadTableRows.slice()
@@ -481,6 +409,7 @@
         selectColumns: [],
         RowsInCols: {},
         selectAllFil: {},
+        indexClickFilter: {},
 
 
         headers: [
