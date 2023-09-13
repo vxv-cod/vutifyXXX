@@ -1,15 +1,10 @@
 <template >
-  <!-- <v-card class="ma-5">createRowsInCols: {{ createRowsInCols }}</v-card> -->
-  <v-card class="ma-3">filterColumns: {{ filterColumns }}</v-card>
+  <!-- <v-card class="ma-3">filterColumns: {{ filterColumns }}</v-card> -->
+  <!-- <v-card class="ma-3">idxListfilter: {{ idxListfilter }}</v-card> -->
+  <v-card class="ma-3">xxxx: {{ xxxx }}</v-card>
 
-
-<!-- <div class="spacing-playground pa-3 ma-3 elevation-5 bg-blue-grey-lighten-1"> -->
-<!-- ? <div class="pa-3 bg-blue-grey-lighten-1"> -->
-<v-card class="pa-3" 
-    :color="colorTabBody"
-  >
-  <div class="d-flex" >
-
+<v-card class="pa-3" :color="colorTabBody">
+  <!-- <div class="d-flex" >
     <v-text-field
       v-model="search"
       prepend-inner-icon="mdi-magnify"
@@ -18,11 +13,8 @@
       hide-details
       density="comfortable"
       item-value="name"
-      
     ></v-text-field>
-  </div>
-
-    <!-- :custom-filter="customfilter" -->
+  </div> -->
 
   <!-- Задаем таблицу -->
   <v-data-table 
@@ -30,56 +22,47 @@
     :items="tableRows"
     item-value="name"
     v-model="selectedRows"
-    
     return-object
-
     items-per-page="10"
     hover
     :search="search"
     fixed-header
     pageText='{0}-{1} из {2}'
     items-per-page-text="Количество строк:"
-    
 
   >
-  <!--
-    
-    :group-by="groupBy" 
-  -->
-
-    <template v-slot:top>
-      <!-- <v-text-field
-        v-model="search"
-        label="Поиск по всей таблице"
-        class="pa-4"
-      ></v-text-field> -->
-    </template>
-    <!-- fixed-footer -->
     <!-- Заполняем заголовоки колонок таблицы -->
-    <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }" >
-      <tr 
-        >
-        <td 
-          class="bg-blue-grey-lighten-1"
-          width=1
-          
-        >
-            <v-checkbox
-              hide-details
-              @click.stop="toggleAll"
-              v-model="checedAllstatus"
-              :indeterminate="indeterminateState"
-              label=""
-
-            >
-            </v-checkbox>
+    <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort, getFixedStyles }" >
+      <tr>
+        <td class="bg-blue-grey-lighten-1" width=1>
+          <v-checkbox
+            hide-details
+            @click.stop="toggleAll"
+            v-model="checedAllstatus"
+            :indeterminate="indeterminateState"
+            label=""
+          ></v-checkbox>
         </td>
-        <template v-for="column in columns" :key="column.key">
+        <!-- <template v-for="column in columns" :key="column.key"> -->
+        <template v-for="(column, y) in columns" :key="column.key"
+        
+        >
           <!-- <pre>{{column.key}}</pre> -->
-          <td class="bg-blue-grey-lighten-1 " >
+          <td class="bg-blue-grey-lighten-1 " 
+          
+          
+          >
             <div class="flex-container" >
               <div class="flex-inner-left">
-                <span class="" align="center" @click="() => toggleSort(column)">{{ column.title }}</span>
+                <span class="" align="center" @click="() => toggleSort(column)">{{ column.title }}
+{{column}}
+
+
+                </span>
+                  <span @click="() => xxxx = getFixedStyles(column, y=100)">
+                    xxxx = {{xxxx}}
+                  </span>
+
                 <span class="">
                   <template v-if="isSorted(column)">
                     <v-icon :icon="getSortIcon(column)"></v-icon>
@@ -87,52 +70,26 @@
                 </span>
               </div>
 
-              <div class="flex-inner-right " 
-              
-              >
+              <div class="flex-inner-right " >
                   <vxvDialog
                     :RowsInColsItem="noDoobleInlist(column.key)"
                     :columnKey="column.key"
                     :columnTitle="column.title"
-                    :selectAll="selectAllFil[column.key]"
+                    :manualSelects="selectAllFil[column.key]"
                     :outSelectedFilter="(value) => columnItem = value"
                     :colorBtn="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
-                    
-
                   />
-              
-              <!-- 
-                    :class="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-red` : null"
-
-                    :class="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
-                    :class="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
-
-                :selectColumns="selectColumns"
-                :selectColumns="{selectColumns}"
-                :out="(value) => {return selectColumns[column.key] = value}"
-                :outSelectedFilter="(value) => {return columnItem = {value}}"
-                :class="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
-
-              -->
-
               </div>
-
             </div>
           </td>
         </template>
       </tr>
-
     </template>
 
     <!-- Заполняем строки таблицы -->
     <template v-slot:item="{item}">
-      <tr 
-          @click="selectedRowsChanged(item)"
-      >
-        <td 
-          width=1
-          :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null"
-          >
+      <tr @click="selectedRowsChanged(item)"> 
+        <td width=1 :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null">
           <v-checkbox
             v-model="selectedRows"
             :value="item.value"
@@ -142,24 +99,10 @@
             style="align-items: center; "
           ></v-checkbox>
         </td>
-
         <td v-for="cell in item.columns" :key="cell.name"
           :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null"
-          
-        >
-          {{ cell }}</td>
-
-        <!-- <td></td>
-        <td>{{ item.columns.name }}</td>
-        <td>{{ item.columns.calories }}</td>
-        <td>{{ item.columns.fat }}</td>
-        <td>{{ item.columns.carbs }}</td>
-        <td>{{ item.columns.protein }}</td>
-        <td>{{ item.columns.iron }}</td> -->
-      
+        >{{ cell }}</td>
       </tr>
-
-
     </template>
 
     <!-- Дополняем footer -->
@@ -169,14 +112,17 @@
       </div>
     </template>
 
+<!-- <v-data-table-footer class="bg-red">
+  <div>
+    <p>oooooooooooo</p>
+  </div>
+</v-data-table-footer> -->
 
 
 
   </v-data-table>
   </v-card>
 
-  <!-- <v-card>tempvarFilter: {{ tempvarFilter }}</v-card> -->
-  <!-- <v-card class="ma-5">tempvarFilter: {{ tempvarFilter }}</v-card> -->
   <!-- <v-card><pre>tableRows: {{ tableRows }}</pre></v-card> -->
   <!-- <v-card><pre>selectedRows: {{ selectedRows }}</pre></v-card> -->
   <!-- <v-card><pre>columnItem: {{ columnItem }}</pre></v-card> -->
@@ -197,191 +143,102 @@
 
 
   export default {
-
     components: {
       vxvDialog,
     },    
 
-    // provide() {
-    //     return {
-    //       filterColumns: this.filterColumns,
-    //     }
-    //   },
-
-    // props: {
-      // items: {
-      //   type: Array,
-      //   default: () => null
-      // },
-    // },  
-
-
     beforeUpdate () {
-
     },
-
     beforeMount () {
-        this.TableRowsAfterSearch = this.loadTableRows
-        // this.TableRowsAfterSearch = Object.assign({}, this.loadTableRows)
         this.tableRows = this.loadTableRows
         this.RowsInCols = structuredClone(this.createRowsInCols)
-        this.tempvarFilter = structuredClone(this.createRowsInCols)
-        // this.selectColumns = this.createRowsInCols
-        Object.keys(this.createRowsInCols).map(e => this.selectAllFil[e] = true)
-
-
+        Object.keys(this.createRowsInCols).map(e => this.selectAllFil[e] = [])
     },
-
     mounted () {
-        // this.tableRows = this.loadTableRows
-        // this.TableRowsAfterSearch = this.loadTableRows
-        // this.selectColumns = this.createRowsInCols
-        // this.RowsInCols = this.createRowsInCols
-        
     },
 
   methods: {
       toggleAll () {
-        if (this.selectedRows.length) {
-          this.selectedRows = []
-          }
-        else {
-          this.selectedRows = this.tableRows.slice()
-        }
+        if (this.selectedRows.length) {this.selectedRows = []}
+        else {this.selectedRows = this.tableRows.slice()}
       },
       selectedRowsChanged(item) {
         let itemValue = item.value
         if (this.selectedRows.includes(itemValue) == false) {this.selectedRows.push(itemValue)} 
         else {this.selectedRows.splice(this.selectedRows.indexOf(itemValue), 1)}
         },
-      dessertsColumn(val) {
-        // Собираем список из списков значений колонок
-        const arr = []
-        for(let i in this.TableRowsAfterSearch) 
-            {arr.includes(val) === false ? arr.push(this.TableRowsAfterSearch[i][val]) : null}
-        // Перебираем список, исключая повторяющиеся значения
-        let uniqueChars = arr.filter((element, index) => {
-            return arr.indexOf(element) === index;
-        })
-        return uniqueChars
-      },
       noDoobleInlist(column) {
         // Перебираем список, исключая повторяющиеся значения
         const arr = this.RowsInCols[column].slice()
-        let uniqueChars = arr.filter((element, index) => {
-            return arr.indexOf(element) === index
-        })
-        return uniqueChars
+        return arr.filter((e, i) => arr.indexOf(e) === i)
       },
     },
 
 
     watch: {
       search(v) {
-        this.tableRows = this.loadTableRows.filter(e => {
-          for (let i in e) {
-            if ((e[i] || '').toString().toLowerCase().includes((v || '').toString().toLowerCase())) {return e}
-          }
-        })
-        this.selectedRows = this.selectedRows.filter(e => {
-          if (this.tableRows.includes(e)) {return e}
-        })
-
-        this.TableRowsAfterSearch = this.tableRows.slice()
+        this.tableRows = this.loadTableRows.filter(e => {for (let i in e) {if ((e[i] || '')
+        .toString().toLowerCase().includes((v || '').toString().toLowerCase())) {return e}}})
+        this.selectedRows = this.selectedRows.filter(e => {if (this.tableRows.includes(e)) {return e}})
       },
+      columnItem(item) {
+        // Определяем ключ и значение отправленное из диалога фильтра
+        let itemKey = Object.keys(item)[0].slice()
+        let itemVals = Object.values(item)[0].slice()
 
+        // Собираем объект из выбранных строк в фильтрах по столбцам
+        this.filterColumns[itemKey] = itemVals
+        // Значение автовыбора всех строк в текущем фильтре
 
-
-
-
-    columnItem(item) {
-      // Определяем ключ и значение отправленное из диалога фильтра
-      let itemKey = Object.keys(item)[0].slice()
-      let vals = Object.values(item)[0].slice()
-
-      // Собираем объект из выбранных строк в фильтрах по столбцам
-      this.filterColumns[itemKey] = vals
-
-      // Значение автовыбора всех строк в текущем фильтре
-      this.selectAllFil[itemKey] = false
-
-      // Если полученные значения от текущего фаильтра пустые или выбраны все строки фильтра, 
-      // то удаляем запись в общем массиве фильтров
-
-      if(
-        vals.length === 0 
-        || vals.length === this.noDoobleInlist(itemKey).length
-      ) 
-        {delete this.filterColumns[itemKey]}
-
-      // Если filterColumns пустой
-      if(Object.values(this.filterColumns).length === 0) {
-        this.RowsInCols = structuredClone(this.createRowsInCols)
-        this.tableRows = this.loadTableRows
-      }
-
-      // Если filterColumns одно или более имя колонки фильтра
-      if(Object.values(this.filterColumns).length >= 1) {
-          let idxListfilter = []  // Список всех индексов по всем фильтрам
-          Object.entries(this.filterColumns).forEach(([key, vals]) => {
-              idxListfilter = []
-              this.createRowsInCols[key].forEach((vv, iv) => {
-                if (vals.includes(vv) && !idxListfilter.includes(iv)) {idxListfilter.push(iv)}
-              })
-          })
-          console.log("idxListfilter = ", idxListfilter);
+        if(Object.values(this.filterColumns).length >= 1) {
+          let key0 = Object.keys(this.filterColumns)[0]
+          let Rows0 = this.createRowsInCols[key0].slice()
+          this.idxListfilter = []
+          
+          // Находим индескы из исходного списка по полученным значениям выбора в фильтрах
+          this.createRowsInCols[itemKey].forEach((e, i) => {if (itemVals.includes(e)) {this.idxListfilter.push(i)}})
 
           // Из полного списка строк в таблице фильтруем те, которые есть в списке выбранных индексов
-          this.tableRows = this.loadTableRows.filter((e, i) => idxListfilter.includes(i) )
-          
-          //  Корректируем массив, согласно полученным индексам
-          Object.entries(this.createRowsInCols).forEach(
-            ([ishodnameCol, ishodvals]) => {
+          this.tableRows = this.loadTableRows.filter((e, i) => this.idxListfilter.includes(i) )
 
-              if (ishodnameCol != itemKey) {
-                this.selectAllFil[ishodnameCol] = true
-                this.RowsInCols[ishodnameCol] = ishodvals.filter((e, i) => idxListfilter.includes(i) === true)
-                } 
-              else {this.selectAllFil[ishodnameCol] = false}
-            }
-          )
-
-      let key0 = Object.keys(this.filterColumns)[0]
-      console.log("111 = ", this.selectAllFil[key0]);
-      
-      if(Object.values(this.filterColumns).length === 1 && itemKey != key0) {
-        this.selectAllFil[key0] = false
-        let arr = this.createRowsInCols[key0].slice()
-        // this.RowsInCols[key0] = arr.filter((element, index) => arr.indexOf(element) === index)
-      }
-
-
-    }},
+          //  Корректируем фильтра в столбцах, согласно полученным индексам
+          Object.entries(this.createRowsInCols).forEach(([key, vals]) => {
+            if (key !== itemKey) {
+              let arr = vals.filter((e, i) => this.idxListfilter.includes(i))
+              this.RowsInCols[key] = arr.slice()
+              this.selectAllFil[key] = [... new Set(arr)]
+              // Удаляем все фильтра кроме 1го
+              if (key !== key0) {delete this.filterColumns[key]}
+              } else {this.selectAllFil[key] = itemVals}
+            })
+          // Для первого фильтра всегда полный список строк
+          this.RowsInCols[key0] = [...Rows0]
+        }
+        // Убираем читсим список для снятия цвета кнопки фильтра
+        if(itemVals.length ===  [... new Set(this.RowsInCols[itemKey])].length)
+          {delete this.filterColumns[itemKey]}
+        this.idxListfilter = []
+      },
       
     },
 
     computed: {
-        checedAllstatus() {
-          let res = null
-          if (this.selectedRows.length === this.tableRows.length || this.indeterminateState === true) {res = true}
-          if (this.selectedRows.length === 0) {res = false}
-          return res
-        },
-        indeterminateState() {
-          return this.selectedRows.length != 0 && this.selectedRows.length < this.tableRows.length? true : false
-        },
-
-
-    createRowsInCols() {
-      const arr = {}
-      const items = this.loadTableRows.slice()
-      const ColNameList = Object.keys(items[0])
-      for(let col of ColNameList) {
-        let xxx = []; for(let e of items) {xxx.push(e[col])}
-        arr[col]= xxx
-        }
-      return arr
-    },    
+      checedAllstatus() {
+        let res = null
+        if (this.selectedRows.length === this.tableRows.length || this.indeterminateState === true) {res = true}
+        if (this.selectedRows.length === 0) {res = false}
+        return res
+      },
+      indeterminateState() {
+        return this.selectedRows.length != 0 && this.selectedRows.length < this.tableRows.length? true : false
+        // return [0, this.tableRows.length].includes(this.selectedRows.length) === false? true : false
+      },
+      createRowsInCols() {
+        const obj = {}
+        this.headers.map(e => e.key).map(col => obj[col] = this.loadTableRows.map(e => e[col]))
+        console.log(obj);
+        return obj
+      },    
 
 
     },
@@ -389,7 +246,7 @@
     data () {
       return {
         drawer: null,
-        columnItem: null,
+        columnItem: {},
         filterColumns: {},
 
         search: '',
@@ -401,16 +258,17 @@
         selectedRows: [],
         pagination: { sortBy: 'name'},
         tableRows: [],
-        TableRowsAfterSearch: [],
 
         groupBy: [{ key: 'dairy', order: 'asc' }],
         RowsInCols: {},
-        tempvarFilter: {},
         selectColumns: [],
         RowsInCols: {},
         selectAllFil: {},
         indexClickFilter: {},
-
+        indexLogObj: {},
+        idxListfilter: [],
+        xxxx: null,
+        
 
         headers: [
           {
@@ -421,11 +279,12 @@
             key: 'name',
             groupable: true,
           },
-          { title: 'Calories', key: 'calories' },
+          { title: 'Calories', key: 'calories', fixed: true, width: 200 },
           { title: 'Fat (g)', key: 'fat' },
           { title: 'Carbs (g)', key: 'carbs' },
           { title: 'Protein (g)', key: 'protein' },
           { title: 'Iron (%)', key: 'iron' },
+          { title: 'Dairy', key: 'dairy' },
         ],
         loadTableRows: [
           {
