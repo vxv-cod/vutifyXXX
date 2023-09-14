@@ -1,7 +1,7 @@
 <template >
   <!-- <v-card class="ma-3">filterColumns: {{ filterColumns }}</v-card> -->
   <!-- <v-card class="ma-3">idxListfilter: {{ idxListfilter }}</v-card> -->
-  <v-card class="ma-3">xxxx: {{ xxxx }}</v-card>
+  <!-- <v-card class="ma-3"><pre>xxxx: {{ xxxx }}</pre></v-card> -->
 
 <v-card class="pa-3" :color="colorTabBody">
   <!-- <div class="d-flex" >
@@ -34,34 +34,66 @@
     <!-- Заполняем заголовоки колонок таблицы -->
     <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort, getFixedStyles }" >
       <tr>
-        <td class="bg-blue-grey-lighten-1" width=1>
+        <td class="bg-blue-grey-lighten-1" width=1
+          style="position: sticky; left: 0; z-Index: 4"
+        >
+
           <v-checkbox
             hide-details
             @click.stop="toggleAll"
             v-model="checedAllstatus"
             :indeterminate="indeterminateState"
             label=""
-          ></v-checkbox>
+          >
+        
+        </v-checkbox>
         </td>
         <!-- <template v-for="column in columns" :key="column.key"> -->
-        <template v-for="(column, y) in columns" :key="column.key"
+        <template v-for="column in columns" :key="column.key"
         
         >
-          <!-- <pre>{{column.key}}</pre> -->
-          <td class="bg-blue-grey-lighten-1 " 
-          
+        <td class="bg-blue-grey-lighten-1 " 
+            :style="collFix(column, 'left')"
           
           >
+
+          <!-- <pre>{{ xxxx = columns }}</pre> -->
+          <!-- {{ xxxx = this.headers.map(e => e.key) }} -->
+
+          <!-- {{column.fixedOffset="500"}} -->
+          <!-- 
+          style="position: fixed;"
+            
+          {{column.width="column.fixed ? 800 : undefined"}}
+        :style="column.width=column.fixed ? 800 : undefined"
+
+            :style="column.fixed ? stylefixedCollsLeft : null"
+            style="stylefixedCollsLeft"
+            :style="getFixedStyles(column)"
+           -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="flex-container" >
               <div class="flex-inner-left">
-                <span class="" align="center" @click="() => toggleSort(column)">{{ column.title }}
-{{column}}
-
-
+                <span class="aaa" align="center" @click="() => toggleSort(column)">{{ column.title }}
+                  <pre>column: {{column}}</pre>
+                  <!-- <pre>columns = {{columns}}</pre> -->
                 </span>
-                  <span @click="() => xxxx = getFixedStyles(column, y=100)">
-                    xxxx = {{xxxx}}
-                  </span>
+                
+                <span>:style={{getFixedStyles(column)}}</span>
+                <!-- <pre>xxxx = {{ xxxx = columns }}</pre> -->
 
                 <span class="">
                   <template v-if="isSorted(column)">
@@ -87,9 +119,12 @@
     </template>
 
     <!-- Заполняем строки таблицы -->
-    <template v-slot:item="{item}">
+    <template v-slot:item="{item, columns}">
+
       <tr @click="selectedRowsChanged(item)"> 
-        <td width=1 :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null">
+        <td  :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null"
+          style="position: sticky; left: 0; z-Index: 4"
+        >
           <v-checkbox
             v-model="selectedRows"
             :value="item.value"
@@ -99,9 +134,33 @@
             style="align-items: center; "
           ></v-checkbox>
         </td>
-        <td v-for="cell in item.columns" :key="cell.name"
+        <td v-for="(cell, key) in item.value" :key="cell.name"
           :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null"
-        >{{ cell }}</td>
+          :style="collFix(columns.find(e => e.key === key), 'left')"
+          >{{ cell }}
+          
+          <!-- :style="collFix(columns.filter(e => e.key === key)[0], 'left')" -->
+          <!-- :style="collFix(columns.find(e => e.key === key), 'left')" -->
+          <!-- <pre>[...item.value].indexOf(key) = {{ item.value.indexOf(key) }}</pre> -->
+          <!-- <pre>columns = {{ columns.key[key] }}</pre> -->
+          <!-- <pre>[...columns] = {{ [...columns][[...item.value].indexOf(key)] }}</pre> -->
+          <!-- <pre>columns = {{ [...columns][item.index] }}</pre> -->
+          <!-- <pre>item.value = {{ [cell, key] }}</pre> -->
+          <!-- <pre>column = {{ xxxx = columns.filter(e => e.key === key)[0]}}</pre> -->
+
+          <!-- <pre>columns = {{ columns[0].key }}</pre> -->
+          <!-- <pre>item = {{ item }}</pre> -->
+          <!-- <pre>columns[item.index] = {{ columns.filter(e => e.key[key] === cell) }}</pre> -->
+          <!-- <pre>item.index = {{ item.index }}</pre> -->
+          <!-- <pre>item.columns = {{ item.columns }}</pre> -->
+          <!-- <pre>columns[item.index] = {{ columns[item.index] }}</pre> -->
+          <!-- <pre>idx = {{ idx }}</pre> -->
+          <!-- <pre>columns[idx] = {{ columns[idx] }}</pre> -->
+          <!-- :style="collFix(columns[item.columns.indexOf(cell)], 'left')" -->
+          
+          
+        </td>
+        <!-- :style="collFix(columns[item.index], 'left')" -->
       </tr>
     </template>
 
@@ -133,6 +192,7 @@
   <br>
   <!-- <v-card>selectColumns: {{ selectColumns }}</v-card> -->
   <br>
+
   
 
 </template>
@@ -140,7 +200,6 @@
   import { computed } from 'vue'
   import vxvDialog from '@/components/vxvTableDialog.vue';
   // import { VDataTable } from 'vuetify/labs/VDataTable'
-
 
   export default {
     components: {
@@ -172,6 +231,18 @@
         const arr = this.RowsInCols[column].slice()
         return arr.filter((e, i) => arr.indexOf(e) === i)
       },
+      collFix(column, size) {
+        if(column.fixed) { return {
+          'position':'sticky',
+          'z-Index': 4,
+          [size]:`${column.fixedOffset + 75}px`,
+          'word-break': 'break-all',
+          'background-color': '#ECEFF1',
+        }}
+      }, 
+      columnForRow(columns, keyR) {
+        return columns.filter(e => e.key === keyR)[0]
+      },           
     },
 
 
@@ -241,6 +312,7 @@
       },    
 
 
+
     },
 
     data () {
@@ -268,6 +340,8 @@
         indexLogObj: {},
         idxListfilter: [],
         xxxx: null,
+        stylefixedCollsLeft: "position: sticky; z-index: 4; left: 0",
+        stylefixedCollsright: "position: sticky; z-index: 4; right: 0",
         
 
         headers: [
@@ -278,9 +352,11 @@
             sortable: false,
             key: 'name',
             groupable: true,
+            fixed: true,
+            // width: 350
           },
-          { title: 'Calories', key: 'calories', fixed: true, width: 200 },
-          { title: 'Fat (g)', key: 'fat' },
+          { title: 'Calories', key: 'calories'},
+          { title: 'Fat (g)', key: 'fat', fixed: true },
           { title: 'Carbs (g)', key: 'carbs' },
           { title: 'Protein (g)', key: 'protein' },
           { title: 'Iron (%)', key: 'iron' },
@@ -452,6 +528,7 @@
 
 .v-data-table-footer__info {
   height: auto 20px;
+
 }
 
 /* .v-data-table .v-table__wrapper > table > thead > tr > td
