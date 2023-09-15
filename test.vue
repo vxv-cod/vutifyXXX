@@ -2,6 +2,7 @@
   <!-- <v-card class="ma-3">filterColumns: {{ filterColumns }}</v-card> -->
   <!-- <v-card class="ma-3">idxListfilter: {{ idxListfilter }}</v-card> -->
   <!-- <v-card class="ma-3"><pre>xxxx: {{ xxxx }}</pre></v-card> -->
+  <v-card class="ma-3"><h2>windowSize: {{ windowSize }}</h2></v-card>
 
 <v-card class="pa-3" :color="colorTabBody">
   <!-- <div class="d-flex" >
@@ -29,56 +30,35 @@
     fixed-header
     pageText='{0}-{1} из {2}'
     items-per-page-text="Количество строк:"
-
+    
   >
+  <!-- 
+    v-resize="onResize"
+   -->
     <!-- Заполняем заголовоки колонок таблицы -->
     <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort, getFixedStyles }" >
       <tr>
         <td class="bg-blue-grey-lighten-1" width=1
           style="position: sticky; left: 0; z-Index: 4"
         >
-
           <v-checkbox
             hide-details
             @click.stop="toggleAll"
             v-model="checedAllstatus"
             :indeterminate="indeterminateState"
             label=""
-          >
-        
-        </v-checkbox>
+          ></v-checkbox>
         </td>
-        <!-- <template v-for="column in columns" :key="column.key"> -->
         <template v-for="column in columns" :key="column.key"
         
         >
-        <td class="bg-blue-grey-lighten-1 " 
+        <td class="bg-blue-grey-lighten-1 " :abbr="`${column.title}`"
             :style="collFix(column, 'left')"
-          
+            :ref="column.fixed ?'fixRef' : 'notfixRef'"
+            :column.fixed="column.fixed ?'true' : 'false'"
+    v-resize="onResize"
+
           >
-
-          <!-- <pre>{{ xxxx = columns }}</pre> -->
-          <!-- {{ xxxx = this.headers.map(e => e.key) }} -->
-
-          <!-- {{column.fixedOffset="500"}} -->
-          <!-- 
-          style="position: fixed;"
-            
-          {{column.width="column.fixed ? 800 : undefined"}}
-        :style="column.width=column.fixed ? 800 : undefined"
-
-            :style="column.fixed ? stylefixedCollsLeft : null"
-            style="stylefixedCollsLeft"
-            :style="getFixedStyles(column)"
-           -->
-
-
-
-
-
-
-
-
 
 
 
@@ -88,12 +68,22 @@
             <div class="flex-container" >
               <div class="flex-inner-left">
                 <span class="aaa" align="center" @click="() => toggleSort(column)">{{ column.title }}
-                  <pre>column: {{column}}</pre>
-                  <!-- <pre>columns = {{columns}}</pre> -->
                 </span>
                 
-                <span>:style={{getFixedStyles(column)}}</span>
-                <!-- <pre>xxxx = {{ xxxx = columns }}</pre> -->
+
+
+                <!-- ----------------------------------------------- -->
+            <!-- 
+              v-resize="onResize"
+             -->
+                
+                <!-- <span>
+                  <pre>column: {{column}}</pre>
+                  style={{getFixedStyles(column)}}
+                </span> -->
+                <!-- ----------------------------------------------- -->
+
+
 
                 <span class="">
                   <template v-if="isSorted(column)">
@@ -103,15 +93,30 @@
               </div>
 
               <div class="flex-inner-right " >
-                  <vxvDialog
-                    :RowsInColsItem="noDoobleInlist(column.key)"
-                    :columnKey="column.key"
-                    :columnTitle="column.title"
-                    :manualSelects="selectAllFil[column.key]"
-                    :outSelectedFilter="(value) => columnItem = value"
-                    :colorBtn="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
-                  />
+                <vxvDialog
+                  :RowsInColsItem="noDoobleInlist(column.key)"
+                  :columnKey="column.key"
+                  :columnTitle="column.title"
+                  :manualSelects="selectAllFil[column.key]"
+                  :outSelectedFilter="(value) => columnItem = value"
+                  :colorBtn="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
+                />
               </div>
+   
+              <!-- <div> -->
+                <v-btn icon variant="text" density="comfortable"
+                  @click="btnFixSticky(column)"
+                >
+                  <v-icon icon="mdi-arrow-horizontal-lock"></v-icon>
+                  <v-tooltip activator="parent" location="end" text="Закрепить столбец"></v-tooltip>
+                </v-btn>
+              <!-- </div> -->
+    
+
+      
+
+
+
             </div>
           </td>
         </template>
@@ -136,30 +141,12 @@
         </td>
         <td v-for="(cell, key) in item.value" :key="cell.name"
           :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null"
+          
+          
           :style="collFix(columns.find(e => e.key === key), 'left')"
-          >{{ cell }}
-          
-          <!-- :style="collFix(columns.filter(e => e.key === key)[0], 'left')" -->
-          <!-- :style="collFix(columns.find(e => e.key === key), 'left')" -->
-          <!-- <pre>[...item.value].indexOf(key) = {{ item.value.indexOf(key) }}</pre> -->
-          <!-- <pre>columns = {{ columns.key[key] }}</pre> -->
-          <!-- <pre>[...columns] = {{ [...columns][[...item.value].indexOf(key)] }}</pre> -->
-          <!-- <pre>columns = {{ [...columns][item.index] }}</pre> -->
-          <!-- <pre>item.value = {{ [cell, key] }}</pre> -->
-          <!-- <pre>column = {{ xxxx = columns.filter(e => e.key === key)[0]}}</pre> -->
-
-          <!-- <pre>columns = {{ columns[0].key }}</pre> -->
-          <!-- <pre>item = {{ item }}</pre> -->
-          <!-- <pre>columns[item.index] = {{ columns.filter(e => e.key[key] === cell) }}</pre> -->
-          <!-- <pre>item.index = {{ item.index }}</pre> -->
-          <!-- <pre>item.columns = {{ item.columns }}</pre> -->
-          <!-- <pre>columns[item.index] = {{ columns[item.index] }}</pre> -->
-          <!-- <pre>idx = {{ idx }}</pre> -->
-          <!-- <pre>columns[idx] = {{ columns[idx] }}</pre> -->
-          <!-- :style="collFix(columns[item.columns.indexOf(cell)], 'left')" -->
           
           
-        </td>
+          >{{ cell }}</td>
         <!-- :style="collFix(columns[item.index], 'left')" -->
       </tr>
     </template>
@@ -201,12 +188,15 @@
   import vxvDialog from '@/components/vxvTableDialog.vue';
   // import { VDataTable } from 'vuetify/labs/VDataTable'
 
+
+
   export default {
     components: {
       vxvDialog,
     },    
 
     beforeUpdate () {
+
     },
     beforeMount () {
         this.tableRows = this.loadTableRows
@@ -214,6 +204,11 @@
         Object.keys(this.createRowsInCols).map(e => this.selectAllFil[e] = [])
     },
     mounted () {
+      // console.log("ref = ", this.$refs.fixRef[0]);
+      // console.log("ref = ", this.$refs.fixRef[0].textContent);
+      // console.log("ref = ", this.$refs.fixRef[0].name);
+      // console.log("ref = ", this.$refs.fixRef[0].clientWidth);
+      this.onResize()
     },
 
   methods: {
@@ -228,12 +223,14 @@
         },
       noDoobleInlist(column) {
         // Перебираем список, исключая повторяющиеся значения
+        // console.log("ref = ", this.$refs.fixRef);
         const arr = this.RowsInCols[column].slice()
         return arr.filter((e, i) => arr.indexOf(e) === i)
       },
       collFix(column, size) {
         if(column.fixed) { return {
           'position':'sticky',
+          // 'position':'fixed',
           'z-Index': 4,
           [size]:`${column.fixedOffset + 75}px`,
           'word-break': 'break-all',
@@ -242,7 +239,67 @@
       }, 
       columnForRow(columns, keyR) {
         return columns.filter(e => e.key === keyR)[0]
-      },           
+      },
+      onResize() {
+        // console.log("bool = ", bool);
+        // console.log(this.$refs.fixRef[0].clientWidth);
+        // this.windowSize = { x: window.innerWidth, y: window.innerHeight }
+        console.log("-------------------");
+        this.$refs.fixRef?.forEach(e => {this.headers.forEach((header, idx) => {
+
+            if(header.title === e.abbr) {
+              header.width = e.clientWidth
+              header.fixed = true
+              // console.log("header.width = ", header.width)
+              console.log(`${header.fixed}.fixed = `, header.fixed)
+              console.log(`${header.title}.width = `, this.headers[idx].width)
+            }
+
+          })})
+
+          // this.headers = structuredClone(this.headers)
+          // console.log("this.headers = ", this.headers)
+        },      
+
+      btnFixSticky(column){
+        column.fixed = !column.fixed
+        console.log(`${column.title}.fixed = `, column.fixed)
+        // this.$refs.fixRef?.forEach(e => {this.headers.forEach((header, idx) => {
+        //           console.log(header.title, e.clientWidth)
+
+        //         if(header.title === e.abbr) {
+        //           header.width = e.clientWidth
+        // //           // console.log(header.title, e.clientWidth)
+        // //           header.fixed = column.fixed
+        // //           // this.headers[idx].width = e.clientWidth
+        // //           // this.headers[idx].fixed = bool
+
+        //         }
+
+        //         })})
+
+        // this.$refs.fixRef?? this.$refs.notfixRef.forEach(e => {
+        //   this.headers.forEach((header, idx) => {
+          
+        //     console.log(idx, header.title,  header.width, e.clientWidth)
+        //     header.width = e.clientWidth
+        // })})
+        // console.log(this.headers)
+
+// this.$refs.notfixRef.forEach(e => {this.headers.forEach((header, idx) => {
+  
+//   console.log(`${header.title}.fixed = `, header.fixed)
+  
+//     if(header.title === e.abbr) {
+//       header.width = e.clientWidth
+//       // console.log("header.width = ", header.width)
+//       console.log(`88888888888${header[e.abbr]}.fixed = `, header[e.abbr])
+//       console.log(`${header.title}.width = `, header.width, e.clientWidth)
+//       console.log(`${header.title}.width = `, this.headers[idx].width)
+// }})})
+
+
+      },
     },
 
 
@@ -307,7 +364,6 @@
       createRowsInCols() {
         const obj = {}
         this.headers.map(e => e.key).map(col => obj[col] = this.loadTableRows.map(e => e[col]))
-        console.log(obj);
         return obj
       },    
 
@@ -343,6 +399,8 @@
         stylefixedCollsLeft: "position: sticky; z-index: 4; left: 0",
         stylefixedCollsright: "position: sticky; z-index: 4; right: 0",
         
+        windowSize: {},
+        
 
         headers: [
           {
@@ -352,15 +410,16 @@
             sortable: false,
             key: 'name',
             groupable: true,
-            fixed: true,
+            // fixed: true,
+            fixed: false,
             // width: 350
           },
-          { title: 'Calories', key: 'calories'},
-          { title: 'Fat (g)', key: 'fat', fixed: true },
-          { title: 'Carbs (g)', key: 'carbs' },
-          { title: 'Protein (g)', key: 'protein' },
-          { title: 'Iron (%)', key: 'iron' },
-          { title: 'Dairy', key: 'dairy' },
+          { title: 'Calories', key: 'calories', fixed: false},
+          { title: 'Fat (g)', key: 'fat', fixed: false},
+          { title: 'Carbs (g)', key: 'carbs', fixed: false},
+          { title: 'Protein (g)', key: 'protein', fixed: false},
+          { title: 'Iron (%)', key: 'iron', fixed: false},
+          { title: 'Dairy', key: 'dairy', fixed: false},
         ],
         loadTableRows: [
           {
@@ -461,7 +520,6 @@
     },
   }
 
-
 </script>
 
 <style >
@@ -514,6 +572,7 @@
   h3 {
     margin: 0 20px;
     color: rgb(238, 255, 0);
+    
   }
 
 
@@ -528,7 +587,7 @@
 
 .v-data-table-footer__info {
   height: auto 20px;
-
+  
 }
 
 /* .v-data-table .v-table__wrapper > table > thead > tr > td

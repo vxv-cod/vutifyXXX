@@ -17,7 +17,6 @@
                   style="display: flex; justify-content: space-between;"
               >
                 <v-card-title >{{ columnTitle }}</v-card-title>
-                <!-- checkbox-multiple-blank-outline -->
                 <v-btn  density="comfortable" variant="text" 
                   :icon="iconSelectAll"
                   @click="selectsNullOrFull"
