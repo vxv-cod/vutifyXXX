@@ -9,19 +9,25 @@
       @update:modelValue="myUpdateModelValue"
     >
       <template v-slot:activator="{ props }" >
-        <v-btn  icon="mdi-filter-variant" density="comfortable" variant="text" v-bind="props" :class="colorBtn" />
+        <v-btn class="ml-2" icon="mdi-filter-variant" density="comfortable" variant="text" v-bind="props" :class="colorBtn"/>
+        <v-tooltip activator="parent" location="top" text="Фильтр"></v-tooltip>
       </template>
+
+
+
+
+
           <div > <!-- Контейнер -->
               <!-- Заголовок диалогового окна -->
-              <div class="flex-container elevation-5 mb-2 bg-amber-accent-3" 
+              <div class="flex-container elevation-5 mb-2 bg-amber-accent-3"
                   style="display: flex; justify-content: space-between;"
               >
                 <v-card-title >{{ columnTitle }}</v-card-title>
-                <v-btn  density="comfortable" variant="text" 
+                <v-btn  density="comfortable" variant="text"
                   :icon="iconSelectAll"
                   @click="selectsNullOrFull"
                 >
-                  <v-tooltip activator="parent" location="end" text="Выбрать все"/>                  
+                  <v-tooltip activator="parent" location="end" text="Выбрать все"/>
                   <v-icon>{{iconSelectAll}}</v-icon>
                 </v-btn>
               </div>
@@ -38,10 +44,10 @@
                     item-value="name"
                     :loading="loadField"
                     autofocus
-                  ></v-text-field>  
+                  ></v-text-field>
 
                   <!-- Список значений по колонке -->
-                  <v-list select-strategy="classic" lines="one" 
+                  <v-list select-strategy="classic" lines="one"
                       class="overflow-y-auto ma-0 pa-0 bg-white"
                       max-height="800"
                       style="backdrop-filter: saturate(0)"
@@ -53,7 +59,7 @@
                       class="d-flex ma-0"
                     >
                       <v-list-item-action start >
-                        <v-checkbox-btn 
+                        <v-checkbox-btn
                             v-model="selected"
                             :value="item"
                             hide-details
@@ -66,7 +72,7 @@
           </div> <!-- Контейнер -->
         </v-menu>
       </v-row>
-      
+
       <!-- <pre>items = {{ items }}</pre>
       <pre>selected = {{ selected }}</pre>
       <pre>fistSLengthSelected = {{ fistSLengthSelected }}</pre>
@@ -84,7 +90,7 @@
       outSelectedFilter: {
         type: Function,
         default: () => null,
-      },      
+      },
       RowsInColsItem: {
         type: Array,
         default: () => []
@@ -115,7 +121,7 @@
     //   author: Object,
     //   callback: Function,
     //   contactsPromise: Promise // или любой другой конструктор
-    // }    
+    // }
 
 
 data () {
@@ -141,19 +147,19 @@ data () {
     this.items = this.RowsInColsItem.slice()
     this.selected = this.RowsInColsItem.slice()
     this.fistSLengthSelected = this.selected.length
-  }, 
+  },
 
   // beforeCreate() {
-  //   console.log(this.columnKey, "beforeCreate")    
+  //   console.log(this.columnKey, "beforeCreate")
   // },
   //  created() {
-  //   console.log(this.columnKey, "created")    
+  //   console.log(this.columnKey, "created")
   // },
   //   beforeMount() {
-  //   console.log(this.columnKey, "beforeMount")    
+  //   console.log(this.columnKey, "beforeMount")
   // },
   //   beforeMount() {
-  //   console.log(this.columnKey, "beforeMount")    
+  //   console.log(this.columnKey, "beforeMount")
   // },
   //   activated() {
   //   console.log(this.columnKey, "activated")
@@ -165,16 +171,16 @@ data () {
   //   console.log(this.columnKey, "beforeUnmount")
   // },
   // updated () {
-  //   console.log(this.columnKey, "updated")    
+  //   console.log(this.columnKey, "updated")
   // },
 
   methods: {
     editSelected (val) {
-      if (this.selected.includes(val) === false) {this.selected.push(val)} 
+      if (this.selected.includes(val) === false) {this.selected.push(val)}
       else {this.selected.splice(this.selected.indexOf(val), 1)}
     },
     selectsNullOrFull() {
-      if (this.selected.length < this.items.length) {this.selected = this.items.slice(0)}  
+      if (this.selected.length < this.items.length) {this.selected = this.items.slice(0)}
       else {this.selected = []}
     },
     myUpdateModelValue(bool){
@@ -193,14 +199,14 @@ data () {
       if (this.selected.length > 0 && this.selected.length < this.items.length) {return "mdi-checkbox-multiple-blank"}
       if ( this.selected.length === this.items.length) {return "mdi-checkbox-multiple-marked-outline"}
     },
-      
+
   },
-    
+
   watch: {
     search (val) {
       this.loadField = true
-      // setTimeout(() => {  
-      this.items = this.searchItem.filter((element) => 
+      // setTimeout(() => {
+      this.items = this.searchItem.filter((element) =>
             { return (element || '').toString().toLowerCase().indexOf((val || '').toLowerCase()) > -1} )
       // }, 500)
       this.selected = this.items.slice()
@@ -209,20 +215,23 @@ data () {
     RowsInColsItem(val) {this.items = val},
     manualSelects(val) {this.selected = val.slice()},
     // menu(val) {console.log(val)},
-  
-  }, 
+
+  },
 
 }
 
 </script>
 
-<style >
-.v-list-item--variant-text .v-list-item__overlay {
-  background: white;
-}
-.v-dialog > .v-overlay__content {
-  position: absolute;
-  top: 50px;
-  right: 0;
-}
+<style lang="sass">
+.v-list-item--variant-text .v-list-item__overlay
+  background: white
+
+.v-dialog > .v-overlay__content
+  position: absolute
+  top: 50px
+  right: 0
+
+
+
+
 </style>

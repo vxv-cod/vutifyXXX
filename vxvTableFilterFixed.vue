@@ -4,6 +4,11 @@
   <!-- <v-card class="ma-3"><pre>xxxx: {{ xxxx }}</pre></v-card> -->
   <!-- <v-card class="ma-3"><h2>notfixRef.length: {{ notfixRef.length }}</h2></v-card> -->
   <!-- <v-card class="ma-3"><h2>fixRef.length: {{ fixRef.length }}</h2></v-card> -->
+  <!-- <v-card class="ma-3"><h2>keys: {{ keys }}</h2></v-card> -->
+  <!-- <v-card class="ma-3"><h2>widths: {{ widths }}</h2></v-card> -->
+  <!-- <v-card class="ma-3"><h2>список значений(0, -1): {{ this.widths.slice(0, -1) }}</h2></v-card> -->
+  <!-- <v-card class="ma-3"><h2>сумма: {{ this.widths.slice(0, -1).reduce((sum, current) => sum + current, 0) }}</h2></v-card> -->
+  <v-card class="ma-3"><h2>rightOffSet: {{ rightOffSet }}</h2></v-card>
 
 <v-card class="pa-3" :color="colorTabBody">
   <div class="d-flex" >
@@ -19,7 +24,7 @@
   </div>
 
   <!-- Задаем таблицу -->
-  <v-data-table 
+  <v-data-table
     :headers="headers"
     :items="tableRows"
     item-value="name"
@@ -30,97 +35,103 @@
     :search="search"
     fixed-header
     pageText='{0}-{1} из {2}'
-    items-per-page-text="Количество строк:"
-    
+    items-per-page-text="Строк"
+
   >
-    <!-- Заполняем заголовоки колонок таблицы -->
-    <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort, getFixedStyles }" >
-      <tr>
-        <td class="bg-blue-grey-lighten-1" width=1
-          style="position: sticky; left: 0; z-Index: 4; border-color-right: #78909C"
+  <!-- Заполняем заголовоки колонок таблицы -->
+  <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort, getFixedStyles }" >
+
+    <tr style="box-shadow: 0px 5px 10px #78909C;">
+        <td class="bg-blue-grey-lighten-1 pa-0 ma-0 w-0"
+          style="position: sticky; left: 0; z-index: 5;"
         >
-          <v-checkbox
-            hide-details
-            @click.stop="toggleAll"
+          <v-checkbox class="d-flex justify-center"
             v-model="checedAllstatus"
+            hide-details
+            @click="toggleAll"
             :indeterminate="indeterminateState"
-            label=""
           ></v-checkbox>
         </td>
-        <template v-for="column in columns" :key="column.key">
-          <td class="bg-blue-grey-lighten-1 " :abbr="`${column.title}`" :id="column.key"
-              :style="collFix(column, 'left')"
-              :ref="column.fixed ? 'fixRef' : 'notfixRef'"
-              v-resize="onResize"
-            >
-            <div class="my-flex-container" >
-              <div class="my-flex-inner-left ">
-                <span class="" @click="() => toggleSort(column)">{{ column.title }}
-                </span>
-                <!-- ----------------------------------------------- -->
-                <!-- <span>
-                  <pre>column: {{column}}</pre>
-                  style={{getFixedStyles(column)}}
-                </span> -->
-                <!-- ----------------------------------------------- -->
-                <span class="">
-                  <template v-if="isSorted(column)">
-                    <v-icon :icon="getSortIcon(column)"></v-icon>
-                  </template>
-                </span>
-              </div>
-
-              <div class="">
-                <vxvDialog 
-                  :RowsInColsItem="noDoobleInlist(column.key)"
-                  :columnKey="column.key"
-                  :columnTitle="column.title"
-                  :manualSelects="selectAllFil[column.key]"
-                  :outSelectedFilter="(value) => columnItem = value"
-                  :colorBtn="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
-                  />
-              </div>
-
-              <div class="">
-                  <v-btn icon variant="text" density="comfortable" @click="column.fixed = !column.fixed"
-                    :class="column.fixed ? `text-amber-accent-3` : null"
-                  >
-                    <v-icon icon="mdi-arrow-horizontal-lock"></v-icon>
-                    <v-tooltip activator="parent" location="end" text="Закрепить столбец"></v-tooltip>
-                  </v-btn>
-              </div>
-
+        <td v-for="column in columns" :key="column.key"
+            class="bg-blue-grey-lighten-1 "
+            :abbr="`${column.title}`" :id="column.key"
+            :style="collFix(column)"
+            :ref="column.fixed ? 'fixRef' : 'notfixRef'"
+            v-resize="onResize"
+          >
+          <div class="my-flex-container" >
+            <div class="my-flex-inner-left ">
+              <span class="" @click="() => toggleSort(column)">{{ column.title }}
+              </span>
+              <!-- ----------------------------------------------- -->
+              <span>
+                <!-- <pre>column: {{column}}</pre>
+                <pre>column.width: {{column.width}}</pre>
+                <pre>column.right: {{column.right}}</pre> -->
+                <!-- <pre>column.style: {{column.style}}</pre> -->
+                <!-- <pre>headers: {{headers}}</pre> -->
+                <!-- <pre>idx: {{idx}}</pre> -->
+                <!-- style={{getFixedStyles(column)}} -->
+              </span>
+              <!-- ----------------------------------------------- -->
+              <span class="">
+                <template v-if="isSorted(column)">
+                  <v-icon :icon="getSortIcon(column)"></v-icon>
+                </template>
+              </span>
             </div>
-          </td>
-        </template>
+
+            <div class="">
+              <vxvDialog
+                :RowsInColsItem="noDoobleInlist(column.key)"
+                :columnKey="column.key"
+                :columnTitle="column.title"
+                :manualSelects="selectAllFil[column.key]"
+                :outSelectedFilter="(value) => columnItem = value"
+                :colorBtn="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
+                />
+            </div>
+
+            <div class="parentTooltip ml-2">
+                <v-btn variant="text" density="comfortable"
+                  :class="column.fixed ? `text-amber-accent-3` : null"
+                  @click="column.fixed = !column.fixed"
+                  :icon="column.fixed ? 'mdi-lock-outline' : 'mdi-lock-open-variant-outline'"
+                />
+                <!-- tooltip ложим в div, при наведении не этот div всплывает подсказка -->
+                <v-tooltip activator="parent" location="top" text="Закрепить столбец"></v-tooltip>
+            </div>
+
+          </div>
+        </td>
       </tr>
     </template>
 
+
     <!-- Заполняем строки таблицы -->
     <template v-slot:item="{item, columns}">
-
-      <tr @click="selectedRowsChanged(item)"> 
-        <td :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null"
-          style="position: sticky; left: 0; z-Index: 4"
+      <tr @click="selectedRowsChanged(item)"
+        class="bg-blue-grey-lighten-3"
+      >
+        <td class=""
+          :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow} elevation-0` : null"
+          style="position: sticky; left: 0; z-index: 0;
+          "
         >
-          <v-checkbox
+          <v-checkbox class="d-flex justify-center"
             v-model="selectedRows"
             :value="item.value"
             hide-details
             label=""
-            class="d-inline"
             style="align-items: center;"
-            
+            color="black"
           ></v-checkbox>
         </td>
         <td v-for="(cell, key) in item.value" :key="cell.name"
-          :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow}` : null"
-          :style="collFix(columns.find(e => e.key === key), 'left')"
-          
-          
+          :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow} elevation-0` : null"
+          :style="collFix(columns.find(e => e.key === key))"
           >{{ cell }}</td>
-        <!-- :style="collFix(columns[item.index], 'left')" -->
-      </tr>
+        </tr>
     </template>
 
     <!-- Дополняем footer -->
@@ -152,7 +163,7 @@
   <!-- <v-card>selectColumns: {{ selectColumns }}</v-card> -->
   <br>
 
-  
+
 
 </template>
 <script>
@@ -160,10 +171,11 @@
   import vxvDialog from '@/components/vxvTableDialog.vue';
   // import { VDataTable } from 'vuetify/labs/VDataTable'
   import { ref, watchEffect } from 'vue'
+import coreJs from 'core-js';
 
   const fixRef = ref([])
   const notfixRef = ref([])
-  
+
   export default {
     setup() {
       watchEffect(() => {}, {flush: 'post'})
@@ -172,7 +184,7 @@
 
     components: {
       vxvDialog,
-    },    
+    },
 
     beforeUpdate () {
     },
@@ -192,7 +204,7 @@
       },
       selectedRowsChanged(item) {
         let itemValue = item.value
-        if (this.selectedRows.includes(itemValue) == false) {this.selectedRows.push(itemValue)} 
+        if (this.selectedRows.includes(itemValue) == false) {this.selectedRows.push(itemValue)}
         else {this.selectedRows.splice(this.selectedRows.indexOf(itemValue), 1)}
         },
       noDoobleInlist(column) {
@@ -200,19 +212,18 @@
         const arr = this.RowsInCols[column].slice()
         return arr.filter((e, i) => arr.indexOf(e) === i)
       },
-      collFix(column, size) {
-        if(column.fixed) { 
-          return {
+      collFix(column) {if(column.fixed) {
+        return {
           'position':'sticky',
           'z-Index': 4,
-          [size]:`${column.fixedOffset + 75}px`,
-          'background-color': '#78909C',
+          'left':`${column.fixedOffset + 73}px`,
+          'right':`${column.right}px`,
           'color': 'white',
-          'border-color-right': '#78909C'
-        }
-      } else {return {'border-color-right': 'white'}}
-      }, 
-
+          'background-color': '#78909C',
+          'outline': '1px solid #ccc',
+          'box-shadow': '5px 0px 10px #78909C',
+        }}
+      },
       onResize() {
         this.fixRef?.forEach(e => {this.headers.forEach((header, idx) => {
             if(header.title === e.abbr) {
@@ -220,7 +231,7 @@
               header.fixed = true
             }
           })})
-        },      
+        },
 
     },
 
@@ -244,7 +255,7 @@
           let key0 = Object.keys(this.filterColumns)[0]
           let Rows0 = this.createRowsInCols[key0].slice()
           this.idxListfilter = []
-          
+
           // Находим индескы из исходного списка по полученным значениям выбора в фильтрах
           this.createRowsInCols[itemKey].forEach((e, i) => {if (itemVals.includes(e)) {this.idxListfilter.push(i)}})
 
@@ -276,16 +287,34 @@
             header.width = e.clientWidth
             header.fixed = true
         }})})
+        // Собираем списки с ширинами колонок и их именами, но из перевернутого списка имен колонок
+        let widths = []
+        let keys = []
+        if(this.fixRef !== null) {this.columnKeysRreverse.forEach(x =>{
+          this.fixRef?.forEach(e => {if(x === e.id) {
+              widths.push(e.clientWidth)
+              keys.push(e.id)
+            }})
+        })}
+        // Определяем отступы от правой границ
+        this.rightOffSet = {}
+        let sumitem = 0
+        keys?.forEach((e, i) => {
+          sumitem += widths[i]
+          this.headers.forEach(header => {
+            if(header.key === e) {header.right = sumitem - widths[i]
+          }})
+        })
+        sumitem = 0
       },
 
-      'notfixRef.length'(val) {
+      'notfixRef.length'() {
         this.notfixRef?.forEach(e => {this.headers.forEach((header, idx) => {
           if(header.title === e.abbr && header.width !== undefined) {
             header.fixed = false
             delete header.width
         }})})
       }
-      
     },
 
     computed: {
@@ -303,7 +332,10 @@
         const obj = {}
         this.headers.map(e => e.key).map(col => obj[col] = this.loadTableRows.map(e => e[col]))
         return obj
-      },    
+      },
+      columnKeysRreverse() {
+        return this.headers.map(e => e.key).reverse()
+      },
 
 
 
@@ -337,13 +369,14 @@
         stylefixedCollsLeft: "position: sticky; z-index: 4; left: 0",
         stylefixedCollsright: "position: sticky; z-index: 4; right: 0",
         // 'border-color-right': '#78909C'
-        
+
         windowSize: {},
+        rightOffSet: {},
 
         headers: [
           {
             // title: 'Dessert (100g serving) - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Frozen Yogurt - Froze',
-            title: 'Dessert (100g serving)', 
+            title: 'Dessert (100g serving)',
             align: 'start',
             sortable: false,
             key: 'name',
@@ -452,7 +485,7 @@
             iron: 6,
             dairy: 'No',
           },
-          
+
         ],
       }
     },
@@ -462,62 +495,56 @@
 
 </script>
 
-<style >
-  td {
-    border-right: 0.5px solid #ccc;
+<style scope>
+  table td {
+    padding: 0;
+    margin: 0;
     text-align: center;
-    border-bottom: 0.5px solid #ccc;
-    }
-  td:first-child {
-    border-left: 1px solid #ccc;
-    }
-  td:last-child {
-    border-right: 1px solid #ccc;
-    }
+    outline: 1px solid #cccccc77;
+  }
+  /* table td {
+    outline: 1px solid #ccc;
+    background-color: red;
+    box-shadow: 0px 5px 10px #78909C;
+  } */
+  /* table th:first-child {
+    outline: 1px solid #ccc;
+    background-color: red;
+    box-shadow: 0px 5px 10px #78909C;
+  } */
   table td:nth-child(2) {
     text-align: left;
-    }
+
+  }
 
 .my-flex-container {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-
   position: relative;
 }
 .my-flex-inner-left {
   flex-grow: 1;
-  /* background-color: blue; */
   display: inline-block;
+  margin-right: 10px;
 }
-/* .my-flex-inner-right {
-  background-color: rgb(0, 255, 21);
-  display: inline-flex;
-  flex-basis: 10px;
-} */
-
-/* .my-
-flex-inner-right:hover {
-  background-color: blue;
-} */
-
-
 
 .v-data-table-footer  {
+  position: relative;
   background-color: #78909C;
   color: white;
-  border-right: 1px solid #ccc;
-  /* position:relative;
-  left: 10px; */
-
+  outline: 0px solid #78909C;
+  box-shadow: 0px -5px 10px #78909C;
+  padding: 5px;
 }
-  h3 {
-    margin: 0 20px;
-    color: rgb(238, 255, 0);
-    
-  }
 
+
+/* .v-data-table .v-table__wrapper > table tbody > tr > td, .v-data-table .v-table__wrapper > table tbody > tr th { */
+/* .v-data-table .v-table__wrapper table tbody tr td { */
+  /* background: rgb(var(--v-theme-surface)); */
+  /* background: none; */
+/* } */
 
 /* .v-data-table-footer__items-per-page,
 .v-data-table-footer__items-per-page,
@@ -528,18 +555,19 @@ flex-inner-right:hover {
   background-color: #CFD8DC;
 } */
 
-.v-data-table-footer__info {
+/* .v-data-table-footer {
+  background-color: red;
+  box-shadow: 0px -5px 10px #78909C;
   height: auto 20px;
-  
-}
+} */
 
 /* .v-data-table .v-table__wrapper > table > thead > tr > td
 {
   margin: 0;
   color: rgb(245, 0, 0);
   justify-content: center;
-} */
-
+}
+ */
 
 
 </style>
