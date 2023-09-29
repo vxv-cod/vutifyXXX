@@ -73,10 +73,12 @@
         </v-menu>
       </v-row>
 
-      <!-- <pre>items = {{ items }}</pre>
-      <pre>selected = {{ selected }}</pre>
-      <pre>fistSLengthSelected = {{ fistSLengthSelected }}</pre>
-      <pre>selected.length = {{ selected.length }}</pre> -->
+      <div class="">
+        <pre class="mr-4">items = {{ items }}</pre>
+        <pre>selected = {{ selected }}</pre>
+      </div>
+      <!-- <pre>fistSLengthSelected = {{ fistSLengthSelected }}</pre> -->
+      <!-- <pre>selected.length = {{ selected.length }}</pre>  -->
 
 </template>
 <script>
@@ -212,9 +214,68 @@ data () {
       this.selected = this.items.slice()
       this.loadField = false
     },
-    RowsInColsItem(val) {this.items = val},
+    // RowsInColsItem(val) {
+    // //   console.log("val_000 = ", this.columnKey, val)
+    //   this.items = val.slice()
+    // //   // this.selected = val.slice()
+    // },
+
+    // RowsInColsItem(val) {this.items = val},
     manualSelects(val) {this.selected = val.slice()},
-    // menu(val) {console.log(val)},
+
+    'RowsInColsItem.length'() {this.items = this.RowsInColsItem.slice()},
+
+    RowsInColsItem: {
+      handler(val) {val.forEach((e, i) =>
+          this.items[i] = e
+        )},
+      deep: true,
+      immediate: true
+      },
+
+    // manualSelects: {
+    //   handler(val) {val.forEach((e, i) =>
+    //     this.selected[i] = e
+    //   )},
+    // deep: true,
+    // immediate: true
+    // },
+
+    items: {
+      handler(val) {val.forEach((e, i) =>
+        this.selected[i] = e
+      )},
+      deep: true,
+      immediate: true
+    },
+
+
+    // manualSelects: {
+    //   handler(val) {
+    //     this.selected = val.slice()
+    //     console.log("val = ", this.columnKey, val.slice())
+    //     val.forEach((e, i) => {
+    //     //   if(!this.selected.includes(e)){
+    //     //   console.log(e, i);
+    //     //   // this.selected[i] = e
+    //     //   // this.this.items[i] = e
+    //     // }
+    //     })
+
+    //     // this.items = val
+    //     // this.selected = val.slice()
+    //   },
+    //   deep: true,
+    //   immediate: true
+    // }
+
+
+    // items(val) {
+    //   let xxx = val.filter(e => !this.selected.includes(e))
+    //   console.log("xxx = ", xxx.slice());
+    // }
+
+
 
   },
 

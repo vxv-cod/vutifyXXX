@@ -1,14 +1,25 @@
 <template >
   <!-- <v-card class="ma-3">filterColumns: {{ filterColumns }}</v-card> -->
   <!-- <v-card class="ma-3">idxListfilter: {{ idxListfilter }}</v-card> -->
-  <!-- <v-card class="ma-3"><pre>xxxx: {{ xxxx }}</pre></v-card> -->
+  <!-- <v-card class="ma-3"><pre>modifiedCells: {{ modifiedCells }}</pre></v-card> -->
   <!-- <v-card class="ma-3"><h2>notfixRef.length: {{ notfixRef.length }}</h2></v-card> -->
   <!-- <v-card class="ma-3"><h2>fixRef.length: {{ fixRef.length }}</h2></v-card> -->
   <!-- <v-card class="ma-3"><h2>keys: {{ keys }}</h2></v-card> -->
   <!-- <v-card class="ma-3"><h2>widths: {{ widths }}</h2></v-card> -->
   <!-- <v-card class="ma-3"><h2>список значений(0, -1): {{ this.widths.slice(0, -1) }}</h2></v-card> -->
   <!-- <v-card class="ma-3"><h2>сумма: {{ this.widths.slice(0, -1).reduce((sum, current) => sum + current, 0) }}</h2></v-card> -->
-  <v-card class="ma-3"><h2>rightOffSet: {{ rightOffSet }}</h2></v-card>
+  <!-- <v-card class="ma-3"><h3>$props: {{ console.log(this) }}</h3></v-card> -->
+  <!-- <v-card class="ma-3"><h3>tableRows: {{ tableRows }}</h3></v-card> -->
+  <!-- <v-card class="ma-3"><h3>showEditIcon: {{ showEditIcon }}</h3></v-card> -->
+  <!-- <v-card class="ma-3"><h3>sequenceEdit: {{ sequenceEdit }}</h3></v-card> -->
+  <!-- <v-card class="ma-3"><h3>indexTableRows: {{ indexTableRows }}</h3></v-card> -->
+  <v-card class="ma-3"><h3>RowsInCols: {{ RowsInCols }}</h3></v-card>
+  <v-card class="ma-3"><h3>modifiedCells: {{ modifiedCells }}</h3></v-card>
+  <v-card class="ma-3"><h3>tableRows: {{ tableRows }}</h3></v-card>
+  <v-card class="ma-3"><h3>modifiedRowsInCols: {{ modifiedRowsInCols }}</h3></v-card>
+  <v-card class="ma-3"><h3>selectAllFil: {{ selectAllFil }}</h3></v-card>
+
+
 
 <v-card class="pa-3" :color="colorTabBody">
   <div class="d-flex" >
@@ -30,8 +41,8 @@
     item-value="name"
     v-model="selectedRows"
     return-object
-    items-per-page="10"
-    hover
+    items-per-page="7"
+    :hover="!showEditIcon"
     :search="search"
     fixed-header
     pageText='{0}-{1} из {2}'
@@ -81,9 +92,15 @@
               </span>
             </div>
 
-            <div class="">
+            <!--
+              :RowsInColsItem="noDoobleInlist(column.key)"
+              :RowsInColsItem="[... new Set(RowsInCols[column.key])]"
+             -->
+
+            <div v-if="showFilterIcon" class="">
               <vxvDialog
-                :RowsInColsItem="noDoobleInlist(column.key)"
+                :RowsInColsItem="[... new Set(RowsInCols[column.key])]"
+
                 :columnKey="column.key"
                 :columnTitle="column.title"
                 :manualSelects="selectAllFil[column.key]"
@@ -92,7 +109,7 @@
                 />
             </div>
 
-            <div class="parentTooltip ml-2">
+            <div v-if="showFixedIcon" class="parentTooltip ml-2">
                 <v-btn variant="text" density="comfortable"
                   :class="column.fixed ? `text-amber-accent-3` : null"
                   @click="column.fixed = !column.fixed"
@@ -108,10 +125,11 @@
     </template>
 
 
+    <!-- :style="showEditIcon ? `color: #78909C` : `color: #263238`" -->
     <!-- Заполняем строки таблицы -->
-    <template v-slot:item="{item, columns}">
-      <tr @click="selectedRowsChanged(item)"
-        class="bg-blue-grey-lighten-3"
+    <template v-slot:item="{item, columns}"
+    >
+      <tr @click="!showEditIcon ? selectedRowsChanged(item) : null"
       >
         <td class=""
           :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow} elevation-0` : null"
@@ -127,18 +145,168 @@
             color="black"
           ></v-checkbox>
         </td>
-        <td v-for="(cell, key) in item.value" :key="cell.name"
+        <td v-for="(cell, key) in item.value" :key="cell.key"
+          :id="cell.key"
+          class="ma-0 pa-2"
+          style="line-height: 130%;"
           :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow} elevation-0` : null"
-          :style="collFix(columns.find(e => e.key === key))"
-          >{{ cell }}</td>
+          :style="[collFix(columns.find(e => e.key === key)),]"
+          :contenteditable="showEditIcon"
+          @input="(val) => {
+              value = val.target.textContent
+              !isNaN(value) ? value = Number(value.replace(',', '.')) : null
+              value !== item.value[key] ? modifiedCells[item.index][key] = value : delete modifiedCells[item.index][key]
+              modifiedRowsInCols[key][item.index] = value
+              RowsInCols[key][item.index] = value
+          }"
+
+        >
+          <p v-if="!showEditIcon">{{ cell }}</p>
+          <p v-if="showEditIcon"
+            :style="item.value[key] !== modifiedRowsInCols[key][item.index] ?'color: #0091EA;' : null"
+          >
+            {{ item.value[key] }}
+          </p>
+          <!-- <p v-if="showEditIcon" :style="item.value[key] !== RowsInCols[key][item.index] ?'color: #0091EA;' : null">{{ RowsInCols[key][item.index] }}</p> -->
+
+          <!-- <contenteditable tag="p" :contenteditable="showEditIcon" v-model="RowsInCols[key][item.index]" :no-nl="true" :no-html="true" @returned="enterPressed" /> -->
+
+
+
+          <!-- <input  :value="cell" :style="item.value[key] !== RowsInCols[key][item.index] ?'color: #0091EA;' : null" /> -->
+
+          <!--
+            :contenteditable="showEditIcon"
+              selectAllFil[key][item.index] = value
+              RowsInCols[key][item.index] = value
+           -->
+
+
+            <!-- Работачий input  -->
+            <!-- <input type="text"  v-if="showEditIcon"
+              class="inputTable"
+              v-model="item.value[key]"
+              @input="XXXX[key][item.index] = item.value[key]"
+              :style="item.value[key].toString() !== RowsInCols[key][item.index].toString() ? 'color: red' : 'color: #0091EA'"
+            > -->
+
+
+        </td>
+      </tr>
+    </template>
+
+
+    <template v-if="showSumRows" v-slot:tfoot="items">
+        <tr class="bg-blue-grey-lighten-1  font-weight-black text-h7" height="50">
+          <td style="position: relative;box-shadow: 0px -5px 10px #78909C;">
+            <v-icon size="large">mdi-sigma</v-icon>
+          </td>
+
+          <td v-for="column in items.columns" :key="column.key"
+            style="box-shadow: 0px -5px 10px #78909C;"
+          >
+            {{sumRowItem(RowsInCols[column.key])}}
+            <!-- {{sumRowItem(items.items, column.key)}} -->
+          </td>
         </tr>
     </template>
 
+
+
+
+
+
+
     <!-- Дополняем footer -->
     <template v-slot:[`footer.prepend`]>
-      <div style="margin: 0 20px; color: #FFD740;">
-        Вносим любые данные
+
+      <div class="my-flex-container" style="position: absolute; left: 0px;">
+        <!-- Сумма строк -->
+        <div class="parentTooltip ml-2">
+          <v-btn variant="text" density="compact" size="x-large"
+            icon="mdi-sigma"
+            @click="showSumRows = !showSumRows"
+            :class="showSumRows ? `text-amber-accent-3` : null"
+          />
+          <!-- tooltip ложим в div, при наведении не этот div всплывает подсказка -->
+          <v-tooltip activator="parent" location="top" text="Сумма по столбцам"></v-tooltip>
       </div>
+
+        <!-- Редактируем таблицу -->
+        <div class="parentTooltip ml-2" >
+            <v-btn variant="text" density="compact" size="x-large"
+              icon="mdi-pencil"
+              @click="showEditIcon = !showEditIcon, !showEditIcon ? saveEditData() : null"
+              :class="showEditIcon ? `text-amber-accent-3` : null"
+            />
+            <!-- tooltip ложим в div, при наведении не этот div всплывает подсказка -->
+            <v-tooltip activator="parent" location="top" text="Редактировать таблицу"></v-tooltip>
+        </div>
+
+        <!-- :icon="!showEditIcon ? `mdi-pencil`: `mdi-content-save-outline`" -->
+
+
+        <!-- Сохраняем таблицу -->
+        <!-- <div class="parentTooltip ml-2" v-show="showEditIcon">
+            <v-btn variant="text" density="compact" size="x-large"
+              icon="mdi-content-save-outline"
+              @click="saveEditData"
+              :class="showSaveIcon ? `text-amber-accent-3` : null"
+            />
+            <v-tooltip activator="parent" location="top" text="Сохранить"></v-tooltip>
+        </div> -->
+
+        <!-- Отменить -->
+        <div class="parentTooltip ml-2" v-show="showEditIcon">
+            <v-btn variant="text" density="compact" size="x-large"
+              icon="mdi-arrow-u-left-top"
+              @click="cancelEdits"
+              :class="showCancelIcon ? `text-amber-accent-3` : null"
+            />
+            <!-- tooltip ложим в div, при наведении не этот div всплывает подсказка -->
+            <v-tooltip activator="parent" location="top" text="Отменить изменения"></v-tooltip>
+        </div>
+
+        <!-- @click="cancelEdits" -->
+
+
+        <!-- Повторить -->
+        <!-- <div class="parentTooltip ml-2" v-show="showEditIcon">
+            <v-btn variant="text" density="compact" size="x-large"
+              icon="mdi-arrow-u-right-top"
+              @click=""
+              :class="showSaveIcon ? `text-amber-accent-3` : null"
+            />
+            <v-tooltip activator="parent" location="top" text="Повторить"></v-tooltip>
+        </div> -->
+
+      </div>
+
+
+
+
+      <!-- <div class="parentTooltip ml-2">
+          <v-btn variant="text" density="compact" size="x-large"
+            icon="mdi-filter-variant"
+            @click="showFilterIcon = !showFilterIcon"
+            :class="showFilterIcon ? `text-amber-accent-3` : null"
+          />
+          <v-tooltip activator="parent" location="top" text="Фильльтры по столбцам"></v-tooltip>
+      </div>
+
+      <div class="parentTooltip ml-2">
+          <v-btn variant="text" density="compact" size="x-large"
+            icon="mdi-lock-outline"
+            @click="showFixedIcon = !showFixedIcon"
+            :class="showFixedIcon ? `text-amber-accent-3` : null"
+          />
+          <v-tooltip activator="parent" location="top" text="Фиксация по столбцам"></v-tooltip>
+      </div> -->
+
+      <!-- <div style="margin: 0 20px; color: #FFD740;">
+        Вносим любые данные
+      </div> -->
+
     </template>
 
 <!-- <v-data-table-footer class="bg-red">
@@ -148,8 +316,17 @@
 </v-data-table-footer> -->
 
 
-
+      <!-- <tr>
+        <td></td>
+        <td v-for="cell in headers.length" :key="cell">{{cell}}</td>
+      </tr> -->
   </v-data-table>
+<!-- <table>
+      <tr>
+        <td></td>
+        <td v-for="cell in headers.length" :key="cell">{{cell}}</td>
+      </tr>
+    </table> -->
   </v-card>
 
   <!-- <v-card><pre>tableRows: {{ tableRows }}</pre></v-card> -->
@@ -171,10 +348,12 @@
   import vxvDialog from '@/components/vxvTableDialog.vue';
   // import { VDataTable } from 'vuetify/labs/VDataTable'
   import { ref, watchEffect } from 'vue'
-import coreJs from 'core-js';
+  // import contenteditable from 'vue-contenteditable'
 
   const fixRef = ref([])
   const notfixRef = ref([])
+
+
 
   export default {
     setup() {
@@ -184,18 +363,49 @@ import coreJs from 'core-js';
 
     components: {
       vxvDialog,
+      // contenteditable,
+
     },
 
     beforeUpdate () {
+      console.log("beforeUpdate")
+
     },
     beforeMount () {
+        console.log("beforeMount")
+
         this.tableRows = this.loadTableRows
         this.RowsInCols = structuredClone(this.createRowsInCols)
-        Object.keys(this.createRowsInCols).map(e => this.selectAllFil[e] = [])
+        this.headers.map(e => {(this.selectAllFil[e.key]) = new Array()})
+        this.modifiedRowsInCols = structuredClone(this.createRowsInCols)
+        this.modifiedCells = this.zeroModifiedCells
+
     },
     mounted () {
+      console.log("mounted")
       this.onResize()
     },
+
+
+  beforeCreate() {
+    console.log("beforeCreate")
+  },
+   created() {
+    console.log("created")
+  },
+    activated() {
+    console.log("activated")
+  },
+    deactivated() {
+    console.log("deactivated")
+  },
+    beforeUnmount() {
+    console.log("beforeUnmount")
+  },
+  updated () {
+    console.log("updated")
+  },
+
 
   methods: {
       toggleAll () {
@@ -231,8 +441,73 @@ import coreJs from 'core-js';
               header.fixed = true
             }
           })})
+        this.rightIndent()
         },
 
+      rightIndent() {
+        // Собираем списки с ширинами колонок и их именами, но из перевернутого списка имен колонок
+        let widths = []
+        let keys = []
+        if(this.fixRef !== null) {this.columnKeysRreverse.forEach(x =>{
+          this.fixRef?.forEach(e => {if(x === e.id) {
+              widths.push(e.clientWidth)
+              keys.push(e.id)
+            }})
+        })}
+        // Определяем отступы от правой границ
+        this.rightOffSet = {}
+        let sumitem = 0
+        keys?.forEach((e, i) => {
+          sumitem += widths[i]
+          this.headers.forEach(header => {
+            if(header.key === e) {header.right = sumitem - widths[i]
+          }})
+        })
+        sumitem = 0
+      },
+      // sumRowItem(rows, colKey) {
+        // Суммируем ячейки
+        // let arr =[]
+        // rows.forEach(e => arr.push(e.value[colKey]))
+        // if(arr.some(tag => isNaN(tag))) {return null }
+        // else {
+        //   let xxx = arr.reduce((sum, current) => sum + current, 0)
+        //   if(Number.isInteger(xxx)) {return xxx} else {return xxx.toFixed(2)}
+        // }
+      // },
+      sumRowItem(arr) {
+        if(arr.some(tag => isNaN(tag))) {return null }
+        else {
+          let xxx = arr.reduce((sum, current) => sum + current, 0)
+          if(Number.isInteger(xxx)) {return xxx} else {return xxx.toFixed(2)}
+        }
+      },
+      saveEditData() {
+        console.log("saveEditData()");
+        this.modifiedCells.map((e, i) => {
+          if(Object.keys(e).length !== 0) {
+            Object.entries(e).forEach(([key, val]) =>{this.tableRows[i][key] = val})
+          }
+        })
+        this.modifiedCells = this.tableRows.map((e, i) => new Object())
+        // this.modifiedCells = [...{} * this.tableRows.length]
+
+      },
+      cancelEdits() {
+        // $updated()
+        this.showEditIcon = false
+
+        const obj = {}
+        this.headers.map(e => e.key).map(col => obj[col] = this.tableRows.map(e => e[col]))
+        this.modifiedRowsInCols = obj
+
+        this.modifiedCells = this.tableRows.map((e, i) => new Object())
+        // this.tableRows = this.tableRows.map(e => e=e)
+      // this.$options.updated()
+      // this.tableRows = this.loadTableRows
+      // this.$forceUpdate()
+
+      }
     },
 
 
@@ -264,6 +539,8 @@ import coreJs from 'core-js';
 
           //  Корректируем фильтра в столбцах, согласно полученным индексам
           Object.entries(this.createRowsInCols).forEach(([key, vals]) => {
+            this.modifiedRowsInCols[key] = vals.filter((e, i) => this.idxListfilter.includes(i))
+
             if (key !== itemKey) {
               let arr = vals.filter((e, i) => this.idxListfilter.includes(i))
               this.RowsInCols[key] = arr.slice()
@@ -287,25 +564,8 @@ import coreJs from 'core-js';
             header.width = e.clientWidth
             header.fixed = true
         }})})
-        // Собираем списки с ширинами колонок и их именами, но из перевернутого списка имен колонок
-        let widths = []
-        let keys = []
-        if(this.fixRef !== null) {this.columnKeysRreverse.forEach(x =>{
-          this.fixRef?.forEach(e => {if(x === e.id) {
-              widths.push(e.clientWidth)
-              keys.push(e.id)
-            }})
-        })}
-        // Определяем отступы от правой границ
-        this.rightOffSet = {}
-        let sumitem = 0
-        keys?.forEach((e, i) => {
-          sumitem += widths[i]
-          this.headers.forEach(header => {
-            if(header.key === e) {header.right = sumitem - widths[i]
-          }})
-        })
-        sumitem = 0
+        // Правый отступ фиксированной колонки
+        this.rightIndent()
       },
 
       'notfixRef.length'() {
@@ -314,7 +574,22 @@ import coreJs from 'core-js';
             header.fixed = false
             delete header.width
         }})})
-      }
+      },
+
+      modifiedCells: {
+        handler(val) {
+          this.showCancelIcon = val.some(e => Object.keys(e).length > 0)
+        },
+        deep: true,
+        immediate: true
+      },
+
+      tableRows(val) {
+        // this.RowsInCols = {}
+        // this.headers.map(e => e.key).map(col => this.RowsInCols[col] = val.map(e => e[col]))
+        this.modifiedCells = this.zeroModifiedCells
+      },
+
     },
 
     computed: {
@@ -331,16 +606,24 @@ import coreJs from 'core-js';
       createRowsInCols() {
         const obj = {}
         this.headers.map(e => e.key).map(col => obj[col] = this.loadTableRows.map(e => e[col]))
+        // this.headers.map(e => e.key).map(col => obj[col] = this.tableRows.map(e => e[col]))
+        // console.log("obj = ", obj);
         return obj
       },
       columnKeysRreverse() {
         return this.headers.map(e => e.key).reverse()
       },
 
+      zeroModifiedCells() {return this.tableRows.map(() => new Object())},
 
+      // indexTableRows() {
+      //   let xxx = {}
+      //   Object.entries(this.loadTableRows).map(([i, e]) => xxx['idx-' + i] = e)
+      //   // console.log("xxx", xxx)
+      //   return xxx
+      // },
 
     },
-
     data () {
       return {
         drawer: null,
@@ -358,20 +641,29 @@ import coreJs from 'core-js';
         tableRows: [],
 
         groupBy: [{ key: 'dairy', order: 'asc' }],
-        RowsInCols: {},
+
         selectColumns: [],
         RowsInCols: {},
         selectAllFil: {},
         indexClickFilter: {},
         indexLogObj: {},
         idxListfilter: [],
-        xxxx: null,
         stylefixedCollsLeft: "position: sticky; z-index: 4; left: 0",
         stylefixedCollsright: "position: sticky; z-index: 4; right: 0",
         // 'border-color-right': '#78909C'
 
         windowSize: {},
         rightOffSet: {},
+        showSaveIcon: false,
+        showCancelIcon: true,
+        showFilterIcon: true,
+        showFixedIcon: true,
+        showSumRows: false,
+        showEditIcon: false,
+
+        modifiedCells: [],
+        modifiedRowsInCols: {},
+        // indexTableRows: [],
 
         headers: [
           {
@@ -496,11 +788,15 @@ import coreJs from 'core-js';
 </script>
 
 <style scope>
+
   table td {
     padding: 0;
     margin: 0;
     text-align: center;
     outline: 1px solid #cccccc77;
+    /* width: max-content ; */
+    vertical-align: center;
+
   }
   /* table td {
     outline: 1px solid #ccc;
@@ -514,6 +810,8 @@ import coreJs from 'core-js';
   } */
   table td:nth-child(2) {
     text-align: left;
+    /* background-color: rgb(189, 179, 87); */
+
 
   }
 
@@ -536,9 +834,37 @@ import coreJs from 'core-js';
   color: white;
   outline: 0px solid #78909C;
   box-shadow: 0px -5px 10px #78909C;
+  border-top: 1px solid #cccccc77;
   padding: 5px;
 }
 
+.inputTable {
+  background-color: bisque;
+  text-align: inherit;
+  margin-top: var(--v-input-chips-margin-top);
+  margin-bottom: var(--v-input-chips-margin-bottom);
+  width: 100%;
+  height: inherit;
+  outline: none;
+  white-space: normal;
+  height: 100%;
+  word-break: break-all;
+}
+/* .inputTable:focus {
+  color: green;
+} */
+
+
+
+/*
+textarea {
+  resize: none;
+	min-height: inherit;
+	max-height: 50px;
+	min-width: inherit;
+	max-width: inherit;
+  width: 100%;
+} */
 
 /* .v-data-table .v-table__wrapper > table tbody > tr > td, .v-data-table .v-table__wrapper > table tbody > tr th { */
 /* .v-data-table .v-table__wrapper table tbody tr td { */
@@ -568,6 +894,19 @@ import coreJs from 'core-js';
   justify-content: center;
 }
  */
+
+
+
+ /* region BLOCK */
+
+ .inputTable {
+  cursor: text;
+  /* background-color:bisque ; */
+  /* color: inherit; */
+
+  /* width: 100%; */
+
+ }
 
 
 </style>
