@@ -1,23 +1,19 @@
 <template >
-  <!-- <v-card class="ma-3">filterColumns: {{ filterColumns }}</v-card> -->
-  <!-- <v-card class="ma-3">idxListfilter: {{ idxListfilter }}</v-card> -->
-  <!-- <v-card class="ma-3"><pre>modifiedCells: {{ modifiedCells }}</pre></v-card> -->
-  <!-- <v-card class="ma-3"><h2>notfixRef.length: {{ notfixRef.length }}</h2></v-card> -->
-  <!-- <v-card class="ma-3"><h2>fixRef.length: {{ fixRef.length }}</h2></v-card> -->
-  <!-- <v-card class="ma-3"><h2>keys: {{ keys }}</h2></v-card> -->
-  <!-- <v-card class="ma-3"><h2>widths: {{ widths }}</h2></v-card> -->
-  <!-- <v-card class="ma-3"><h2>список значений(0, -1): {{ this.widths.slice(0, -1) }}</h2></v-card> -->
-  <!-- <v-card class="ma-3"><h2>сумма: {{ this.widths.slice(0, -1).reduce((sum, current) => sum + current, 0) }}</h2></v-card> -->
-  <!-- <v-card class="ma-3"><h3>$props: {{ console.log(this) }}</h3></v-card> -->
+
+  <!-- <v-card class="ma-3"><h3>nameColumsList: {{ nameColumsList }}</h3></v-card> -->
+
+  <!-- <v-card class="ma-3"><h3>modifiedCells: {{ modifiedCells }}</h3></v-card> -->
+
+  <!-- <v-card class="ma-3"><h3>createRowsInCols: {{ createRowsInCols }}</h3></v-card> -->
+  <!-- <v-card class="ma-3"><h3>loadTableRows: {{ loadTableRows }}</h3></v-card> -->
+
+  <!-- <v-card class="ma-3"><h3>RowsInCols: {{ RowsInCols }}</h3></v-card> -->
   <!-- <v-card class="ma-3"><h3>tableRows: {{ tableRows }}</h3></v-card> -->
-  <!-- <v-card class="ma-3"><h3>showEditIcon: {{ showEditIcon }}</h3></v-card> -->
-  <!-- <v-card class="ma-3"><h3>sequenceEdit: {{ sequenceEdit }}</h3></v-card> -->
-  <!-- <v-card class="ma-3"><h3>indexTableRows: {{ indexTableRows }}</h3></v-card> -->
-  <v-card class="ma-3"><h3>RowsInCols: {{ RowsInCols }}</h3></v-card>
-  <v-card class="ma-3"><h3>modifiedCells: {{ modifiedCells }}</h3></v-card>
-  <v-card class="ma-3"><h3>tableRows: {{ tableRows }}</h3></v-card>
-  <v-card class="ma-3"><h3>modifiedRowsInCols: {{ modifiedRowsInCols }}</h3></v-card>
-  <v-card class="ma-3"><h3>selectAllFil: {{ selectAllFil }}</h3></v-card>
+
+  <!-- <v-card class="ma-3"><h3>selectAllFil: {{ selectAllFil }}</h3></v-card> -->
+
+  <!-- <v-card class="ma-3"><h3>colorEditCells: {{ colorEditCells }}</h3></v-card> -->
+
 
 
 
@@ -41,7 +37,7 @@
     item-value="name"
     v-model="selectedRows"
     return-object
-    items-per-page="7"
+    items-per-page="10"
     :hover="!showEditIcon"
     :search="search"
     fixed-header
@@ -71,20 +67,10 @@
             v-resize="onResize"
           >
           <div class="my-flex-container" >
+
             <div class="my-flex-inner-left ">
               <span class="" @click="() => toggleSort(column)">{{ column.title }}
               </span>
-              <!-- ----------------------------------------------- -->
-              <span>
-                <!-- <pre>column: {{column}}</pre>
-                <pre>column.width: {{column.width}}</pre>
-                <pre>column.right: {{column.right}}</pre> -->
-                <!-- <pre>column.style: {{column.style}}</pre> -->
-                <!-- <pre>headers: {{headers}}</pre> -->
-                <!-- <pre>idx: {{idx}}</pre> -->
-                <!-- style={{getFixedStyles(column)}} -->
-              </span>
-              <!-- ----------------------------------------------- -->
               <span class="">
                 <template v-if="isSorted(column)">
                   <v-icon :icon="getSortIcon(column)"></v-icon>
@@ -92,24 +78,18 @@
               </span>
             </div>
 
-            <!--
-              :RowsInColsItem="noDoobleInlist(column.key)"
-              :RowsInColsItem="[... new Set(RowsInCols[column.key])]"
-             -->
-
-            <div v-if="showFilterIcon" class="">
+            <div class="my-flex-inner-right">
               <vxvDialog
                 :RowsInColsItem="[... new Set(RowsInCols[column.key])]"
-
                 :columnKey="column.key"
                 :columnTitle="column.title"
-                :manualSelects="selectAllFil[column.key]"
+                :outsideSelect="[... new Set(selectAllFil[column.key])]"
                 :outSelectedFilter="(value) => columnItem = value"
                 :colorBtn="Object.keys(filterColumns).includes(column.key) && column.key !=[] ? `text-amber-accent-3` : null"
+                :showEditIcon="showEditIcon"
                 />
             </div>
-
-            <div v-if="showFixedIcon" class="parentTooltip ml-2">
+            <div class="parentTooltip ml-2">
                 <v-btn variant="text" density="comfortable"
                   :class="column.fixed ? `text-amber-accent-3` : null"
                   @click="column.fixed = !column.fixed"
@@ -124,8 +104,6 @@
       </tr>
     </template>
 
-
-    <!-- :style="showEditIcon ? `color: #78909C` : `color: #263238`" -->
     <!-- Заполняем строки таблицы -->
     <template v-slot:item="{item, columns}"
     >
@@ -147,75 +125,43 @@
         </td>
         <td v-for="(cell, key) in item.value" :key="cell.key"
           :id="cell.key"
-          class="ma-0 pa-2"
-          style="line-height: 130%;"
+          class="inputTableTd ma-0 pa-2"
           :class="selectedRows.includes(item.value) ? `strong bg-${colorTabRow} elevation-0` : null"
-          :style="[collFix(columns.find(e => e.key === key)),]"
+          style="line-height: 130%;"
           :contenteditable="showEditIcon"
-          @input="(val) => {
+          :style="[
+              collFix(columns.find(e => e.key === key)),
+              colorEditCells[key][item.index] !== tableRows[item.index][key] ? 'color: #0091EA;' : null,
+              columns.find(e => e.key === key).fixed === true &&
+                colorEditCells[key][item.index] !== tableRows[item.index][key] ?
+                'background-color: white; box-shadow: none' : null,
+          ]"
+          @input.lazy="(val) => {
               value = val.target.textContent
               !isNaN(value) ? value = Number(value.replace(',', '.')) : null
               value !== item.value[key] ? modifiedCells[item.index][key] = value : delete modifiedCells[item.index][key]
-              modifiedRowsInCols[key][item.index] = value
-              RowsInCols[key][item.index] = value
-          }"
-
-        >
-          <p v-if="!showEditIcon">{{ cell }}</p>
-          <p v-if="showEditIcon"
-            :style="item.value[key] !== modifiedRowsInCols[key][item.index] ?'color: #0091EA;' : null"
+              colorEditCells[key][item.index] = value
+            }"
           >
-            {{ item.value[key] }}
-          </p>
-          <!-- <p v-if="showEditIcon" :style="item.value[key] !== RowsInCols[key][item.index] ?'color: #0091EA;' : null">{{ RowsInCols[key][item.index] }}</p> -->
-
-          <!-- <contenteditable tag="p" :contenteditable="showEditIcon" v-model="RowsInCols[key][item.index]" :no-nl="true" :no-html="true" @returned="enterPressed" /> -->
-
-
-
-          <!-- <input  :value="cell" :style="item.value[key] !== RowsInCols[key][item.index] ?'color: #0091EA;' : null" /> -->
-
-          <!--
-            :contenteditable="showEditIcon"
-              selectAllFil[key][item.index] = value
-              RowsInCols[key][item.index] = value
-           -->
-
-
-            <!-- Работачий input  -->
-            <!-- <input type="text"  v-if="showEditIcon"
-              class="inputTable"
-              v-model="item.value[key]"
-              @input="XXXX[key][item.index] = item.value[key]"
-              :style="item.value[key].toString() !== RowsInCols[key][item.index].toString() ? 'color: red' : 'color: #0091EA'"
-            > -->
-
-
+          <p v-if="showEditIcon" style="" v-text="cell"></p>
+          <p v-if="!showEditIcon" style="user-select: none;" v-text="tableRows[item.index][key]"></p>
+          <!-- <pre>{{ columns.find(e => e.key === key).fixed }}</pre> -->
         </td>
       </tr>
     </template>
-
 
     <template v-if="showSumRows" v-slot:tfoot="items">
         <tr class="bg-blue-grey-lighten-1  font-weight-black text-h7" height="50">
           <td style="position: relative;box-shadow: 0px -5px 10px #78909C;">
             <v-icon size="large">mdi-sigma</v-icon>
           </td>
-
           <td v-for="column in items.columns" :key="column.key"
             style="box-shadow: 0px -5px 10px #78909C;"
           >
-            {{sumRowItem(RowsInCols[column.key])}}
-            <!-- {{sumRowItem(items.items, column.key)}} -->
+            <p v-show="!showEditIcon">{{sumRowItem(RowsInCols[column.key])}}</p>
           </td>
         </tr>
     </template>
-
-
-
-
-
-
 
     <!-- Дополняем footer -->
     <template v-slot:[`footer.prepend`]>
@@ -243,19 +189,6 @@
             <v-tooltip activator="parent" location="top" text="Редактировать таблицу"></v-tooltip>
         </div>
 
-        <!-- :icon="!showEditIcon ? `mdi-pencil`: `mdi-content-save-outline`" -->
-
-
-        <!-- Сохраняем таблицу -->
-        <!-- <div class="parentTooltip ml-2" v-show="showEditIcon">
-            <v-btn variant="text" density="compact" size="x-large"
-              icon="mdi-content-save-outline"
-              @click="saveEditData"
-              :class="showSaveIcon ? `text-amber-accent-3` : null"
-            />
-            <v-tooltip activator="parent" location="top" text="Сохранить"></v-tooltip>
-        </div> -->
-
         <!-- Отменить -->
         <div class="parentTooltip ml-2" v-show="showEditIcon">
             <v-btn variant="text" density="compact" size="x-large"
@@ -267,93 +200,21 @@
             <v-tooltip activator="parent" location="top" text="Отменить изменения"></v-tooltip>
         </div>
 
-        <!-- @click="cancelEdits" -->
-
-
-        <!-- Повторить -->
-        <!-- <div class="parentTooltip ml-2" v-show="showEditIcon">
-            <v-btn variant="text" density="compact" size="x-large"
-              icon="mdi-arrow-u-right-top"
-              @click=""
-              :class="showSaveIcon ? `text-amber-accent-3` : null"
-            />
-            <v-tooltip activator="parent" location="top" text="Повторить"></v-tooltip>
-        </div> -->
-
       </div>
-
-
-
-
-      <!-- <div class="parentTooltip ml-2">
-          <v-btn variant="text" density="compact" size="x-large"
-            icon="mdi-filter-variant"
-            @click="showFilterIcon = !showFilterIcon"
-            :class="showFilterIcon ? `text-amber-accent-3` : null"
-          />
-          <v-tooltip activator="parent" location="top" text="Фильльтры по столбцам"></v-tooltip>
-      </div>
-
-      <div class="parentTooltip ml-2">
-          <v-btn variant="text" density="compact" size="x-large"
-            icon="mdi-lock-outline"
-            @click="showFixedIcon = !showFixedIcon"
-            :class="showFixedIcon ? `text-amber-accent-3` : null"
-          />
-          <v-tooltip activator="parent" location="top" text="Фиксация по столбцам"></v-tooltip>
-      </div> -->
-
-      <!-- <div style="margin: 0 20px; color: #FFD740;">
-        Вносим любые данные
-      </div> -->
 
     </template>
-
-<!-- <v-data-table-footer class="bg-red">
-  <div>
-    <p>oooooooooooo</p>
-  </div>
-</v-data-table-footer> -->
-
-
-      <!-- <tr>
-        <td></td>
-        <td v-for="cell in headers.length" :key="cell">{{cell}}</td>
-      </tr> -->
   </v-data-table>
-<!-- <table>
-      <tr>
-        <td></td>
-        <td v-for="cell in headers.length" :key="cell">{{cell}}</td>
-      </tr>
-    </table> -->
   </v-card>
-
-  <!-- <v-card><pre>tableRows: {{ tableRows }}</pre></v-card> -->
-  <!-- <v-card><pre>selectedRows: {{ selectedRows }}</pre></v-card> -->
-  <!-- <v-card><pre>columnItem: {{ columnItem }}</pre></v-card> -->
-  <!-- <v-card>tableRows: {{ Object.keys(tableRows) }}</v-card> -->
-  <!-- <v-card>filterColumns: {{ filterColumns }}</v-card> -->
-  <br>
-  <!-- <v-card>RowsInCols: {{ RowsInCols }}</v-card> -->
-  <br>
-  <!-- <v-card>selectColumns: {{ selectColumns }}</v-card> -->
-  <br>
-
-
-
 </template>
+
+
 <script>
-  import { computed } from 'vue'
   import vxvDialog from '@/components/vxvTableDialog.vue';
-  // import { VDataTable } from 'vuetify/labs/VDataTable'
+  import { VDataTable } from 'vuetify/labs/VDataTable'
   import { ref, watchEffect } from 'vue'
-  // import contenteditable from 'vue-contenteditable'
 
   const fixRef = ref([])
   const notfixRef = ref([])
-
-
 
   export default {
     setup() {
@@ -363,22 +224,24 @@
 
     components: {
       vxvDialog,
-      // contenteditable,
-
     },
 
-    beforeUpdate () {
-      console.log("beforeUpdate")
-
-    },
+    // beforeUpdate () {
+    //   console.log("beforeUpdate")
+    // },
     beforeMount () {
         console.log("beforeMount")
 
-        this.tableRows = this.loadTableRows
-        this.RowsInCols = structuredClone(this.createRowsInCols)
-        this.headers.map(e => {(this.selectAllFil[e.key]) = new Array()})
-        this.modifiedRowsInCols = structuredClone(this.createRowsInCols)
-        this.modifiedCells = this.zeroModifiedCells
+        // this.tableRows = this.loadTableRows
+        this.tableRows = this.loadTableRows.map(e => e)
+
+        Object.entries(this.createRowsInCols).map(([key, vals]) => {
+          this.RowsInCols[key] = vals.slice()
+          this.selectAllFil[key] = vals.slice()
+          this.colorEditCells[key] = vals.slice()
+        })
+
+        this.modifiedCells = this.zeroModifiedCells.slice()
 
     },
     mounted () {
@@ -387,27 +250,27 @@
     },
 
 
-  beforeCreate() {
-    console.log("beforeCreate")
-  },
-   created() {
-    console.log("created")
-  },
-    activated() {
-    console.log("activated")
-  },
-    deactivated() {
-    console.log("deactivated")
-  },
-    beforeUnmount() {
-    console.log("beforeUnmount")
-  },
-  updated () {
-    console.log("updated")
-  },
+    beforeCreate() {
+      console.log("beforeCreate")
+    },
+    created() {
+      console.log("created")
+    },
+      activated() {
+      console.log("activated")
+    },
+      deactivated() {
+      console.log("deactivated")
+    },
+      beforeUnmount() {
+      console.log("beforeUnmount")
+    },
+    updated () {
+      console.log("updated")
+    },
 
 
-  methods: {
+    methods: {
       toggleAll () {
         if (this.selectedRows.length) {this.selectedRows = []}
         else {this.selectedRows = this.tableRows.slice()}
@@ -482,40 +345,80 @@
           if(Number.isInteger(xxx)) {return xxx} else {return xxx.toFixed(2)}
         }
       },
+
       saveEditData() {
         console.log("saveEditData()");
         this.modifiedCells.map((e, i) => {
           if(Object.keys(e).length !== 0) {
-            Object.entries(e).forEach(([key, val]) =>{this.tableRows[i][key] = val})
+            Object.entries(e).forEach(([key, val]) => {
+              this.RowsInCols[key][i] = val
+              this.selectAllFil[key][i] = val
+              this.tableRows[i][key] = val
+            })
           }
         })
-        this.modifiedCells = this.tableRows.map((e, i) => new Object())
-        // this.modifiedCells = [...{} * this.tableRows.length]
-
+        this.modifiedCells = this.tableRows.map(() => new Object())
       },
       cancelEdits() {
-        // $updated()
         this.showEditIcon = false
+        setTimeout(() => {
+          this.tableRows.map((e, i) => {
+            if(Object.keys(e).length !== 0) {
+              Object.entries(e).forEach(([key, val]) => {
+                this.RowsInCols[key][i] = val
+                this.selectAllFil[key][i] = val
+                this.colorEditCells[key][i] = val
+              })
+            }})
+          this.modifiedCells = this.tableRows.map(() => new Object())
+        }, )
+      },
 
-        const obj = {}
-        this.headers.map(e => e.key).map(col => obj[col] = this.tableRows.map(e => e[col]))
-        this.modifiedRowsInCols = obj
-
-        this.modifiedCells = this.tableRows.map((e, i) => new Object())
-        // this.tableRows = this.tableRows.map(e => e=e)
-      // this.$options.updated()
-      // this.tableRows = this.loadTableRows
-      // this.$forceUpdate()
-
-      }
     },
 
+
+    computed: {
+      checedAllstatus() {
+        let res = null
+        if (this.selectedRows.length === this.tableRows.length || this.indeterminateState === true) {res = true}
+        if (this.selectedRows.length === 0) {res = false}
+        return res
+      },
+      indeterminateState() {
+        return this.selectedRows.length != 0 && this.selectedRows.length < this.tableRows.length? true : false
+        // return [0, this.tableRows.length].includes(this.selectedRows.length) === false? true : false
+      },
+      createRowsInCols() {
+        const obj = {}
+        this.nameColumsList.map(col => obj[col] = this.loadTableRows.map(e => e[col]))
+        return obj
+      },
+      columnKeysRreverse() {
+        return this.headers.map(e => e.key).reverse()
+      },
+
+      zeroModifiedCells() {return this.tableRows.map(() => new Object())},
+
+      nameColumsList() {return this.headers.map(e => e.key)},
+
+      indexTableRows() {
+        let xxx = {}
+        // Object.entries(this.loadTableRows).map(([index, row]) => xxx[index] = row)
+        this.loadTableRows.map((row, index) => xxx[index] = row)
+        // console.log("xxx", xxx)
+        return xxx
+      },
+
+    },
 
     watch: {
       search(v) {
         this.tableRows = this.loadTableRows.filter(e => {for (let i in e) {if ((e[i] || '')
         .toString().toLowerCase().includes((v || '').toString().toLowerCase())) {return e}}})
         this.selectedRows = this.selectedRows.filter(e => {if (this.tableRows.includes(e)) {return e}})
+
+        this.nameColumsList.map(col => this.colorEditCells[col] = this.tableRows.map(e => e[col]))
+
       },
       columnItem(item) {
         // Определяем ключ и значение отправленное из диалога фильтра
@@ -539,7 +442,7 @@
 
           //  Корректируем фильтра в столбцах, согласно полученным индексам
           Object.entries(this.createRowsInCols).forEach(([key, vals]) => {
-            this.modifiedRowsInCols[key] = vals.filter((e, i) => this.idxListfilter.includes(i))
+            this.colorEditCells[key] = vals.filter((e, i) => this.idxListfilter.includes(i))
 
             if (key !== itemKey) {
               let arr = vals.filter((e, i) => this.idxListfilter.includes(i))
@@ -585,45 +488,11 @@
       },
 
       tableRows(val) {
-        // this.RowsInCols = {}
-        // this.headers.map(e => e.key).map(col => this.RowsInCols[col] = val.map(e => e[col]))
         this.modifiedCells = this.zeroModifiedCells
       },
 
     },
 
-    computed: {
-      checedAllstatus() {
-        let res = null
-        if (this.selectedRows.length === this.tableRows.length || this.indeterminateState === true) {res = true}
-        if (this.selectedRows.length === 0) {res = false}
-        return res
-      },
-      indeterminateState() {
-        return this.selectedRows.length != 0 && this.selectedRows.length < this.tableRows.length? true : false
-        // return [0, this.tableRows.length].includes(this.selectedRows.length) === false? true : false
-      },
-      createRowsInCols() {
-        const obj = {}
-        this.headers.map(e => e.key).map(col => obj[col] = this.loadTableRows.map(e => e[col]))
-        // this.headers.map(e => e.key).map(col => obj[col] = this.tableRows.map(e => e[col]))
-        // console.log("obj = ", obj);
-        return obj
-      },
-      columnKeysRreverse() {
-        return this.headers.map(e => e.key).reverse()
-      },
-
-      zeroModifiedCells() {return this.tableRows.map(() => new Object())},
-
-      // indexTableRows() {
-      //   let xxx = {}
-      //   Object.entries(this.loadTableRows).map(([i, e]) => xxx['idx-' + i] = e)
-      //   // console.log("xxx", xxx)
-      //   return xxx
-      // },
-
-    },
     data () {
       return {
         drawer: null,
@@ -635,35 +504,19 @@
         colorTabHeder: "blue-grey-lighten-1",
         colorTabBody: "blue-grey-lighten-5",
         colorTabRow: "blue-grey-lighten-4",
+
         loading: false,
         selectedRows: [],
-        pagination: { sortBy: 'name'},
         tableRows: [],
-
-        groupBy: [{ key: 'dairy', order: 'asc' }],
-
-        selectColumns: [],
         RowsInCols: {},
         selectAllFil: {},
-        indexClickFilter: {},
-        indexLogObj: {},
         idxListfilter: [],
-        stylefixedCollsLeft: "position: sticky; z-index: 4; left: 0",
-        stylefixedCollsright: "position: sticky; z-index: 4; right: 0",
-        // 'border-color-right': '#78909C'
-
-        windowSize: {},
         rightOffSet: {},
-        showSaveIcon: false,
         showCancelIcon: true,
-        showFilterIcon: true,
-        showFixedIcon: true,
         showSumRows: false,
         showEditIcon: false,
-
         modifiedCells: [],
-        modifiedRowsInCols: {},
-        // indexTableRows: [],
+        colorEditCells: {},
 
         headers: [
           {
@@ -827,6 +680,11 @@
   display: inline-block;
   margin-right: 10px;
 }
+/* .my-flex-inner-right {
+  flex-grow: 1;
+  display: inline-block;
+  margin-right: 10px;
+} */
 
 .v-data-table-footer  {
   position: relative;
@@ -854,6 +712,11 @@
   color: green;
 } */
 
+/* .inputTableTd:focus: {
+  color: green;
+  user-select: all;
+  cursor: cell;
+} */
 
 
 /*
@@ -905,9 +768,7 @@ textarea {
   /* color: inherit; */
 
   /* width: 100%; */
-
  }
-
 
 </style>
 

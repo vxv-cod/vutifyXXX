@@ -9,8 +9,9 @@
       @update:modelValue="myUpdateModelValue"
     >
       <template v-slot:activator="{ props }" >
-        <v-btn class="ml-2" icon="mdi-filter-variant" density="comfortable" variant="text" v-bind="props" :class="colorBtn"/>
-        <v-tooltip activator="parent" location="top" text="Фильтр"></v-tooltip>
+        <v-btn :disabled="showEditIcon" class="ml-2" icon="mdi-filter-variant" density="comfortable" variant="text" v-bind="props" :class="colorBtn"/>
+        <v-tooltip v-if="!showEditIcon" activator="parent" location="top" text="Фильтр"></v-tooltip>
+        <v-tooltip v-if="showEditIcon" activator="parent" location="top" text="Фильтр не доступен в режиме редактирования таблицы"></v-tooltip>
       </template>
 
 
@@ -19,13 +20,14 @@
 
           <div > <!-- Контейнер -->
               <!-- Заголовок диалогового окна -->
-              <div class="flex-container elevation-5 mb-2 bg-amber-accent-3"
-                  style="display: flex; justify-content: space-between;"
+              <div class="elevation-5 mb-2 bg-amber-accent-3"
+                  style="display: flex; justify-content: space-between; align-items: center;"
               >
                 <v-card-title >{{ columnTitle }}</v-card-title>
                 <v-btn  density="comfortable" variant="text"
                   :icon="iconSelectAll"
                   @click="selectsNullOrFull"
+
                 >
                   <v-tooltip activator="parent" location="end" text="Выбрать все"/>
                   <v-icon>{{iconSelectAll}}</v-icon>
@@ -73,10 +75,11 @@
         </v-menu>
       </v-row>
 
-      <div class="">
+      <!-- <div class="d-flex">
         <pre class="mr-4">items = {{ items }}</pre>
         <pre>selected = {{ selected }}</pre>
-      </div>
+        <pre>outsideSelect = {{ outsideSelect }}</pre>
+      </div> -->
       <!-- <pre>fistSLengthSelected = {{ fistSLengthSelected }}</pre> -->
       <!-- <pre>selected.length = {{ selected.length }}</pre>  -->
 
@@ -92,6 +95,10 @@
       outSelectedFilter: {
         type: Function,
         default: () => null,
+      },
+      showEditIcon: {
+        type: Boolean,
+        default: () => false,
       },
       RowsInColsItem: {
         type: Array,
@@ -109,7 +116,7 @@
         type: String,
         default: () => ''
       },
-      manualSelects: {
+      outsideSelect: {
         type: Array,
         default: () => []
       },
@@ -220,20 +227,77 @@ data () {
     // //   // this.selected = val.slice()
     // },
 
-    // RowsInColsItem(val) {this.items = val},
-    manualSelects(val) {this.selected = val.slice()},
+    RowsInColsItem(val) {this.items = val},
+    // outsideSelect(val) {this.selected = val.slice()},
+    // outsideSelect(val) {this.selected = val},
 
-    'RowsInColsItem.length'() {this.items = this.RowsInColsItem.slice()},
 
-    RowsInColsItem: {
-      handler(val) {val.forEach((e, i) =>
-          this.items[i] = e
-        )},
+    outsideSelect: {
+      handler(newValue) {this.selected = newValue},
       deep: true,
-      immediate: true
-      },
+    },
 
-    // manualSelects: {
+
+
+  //   outsideSelect: {
+  //     handler(newValue, oldValue) {
+  //       // let [xxx] = Object.entries(oldValue).filter(([i, e]) => e !== newValue[i])
+  //       // let ddd = newValue.find((e, i) => e !== oldValue[i])
+  //       // let eee = oldValue.find((e, i) => e !== newValue[i])
+  //       // let idx = oldValue.findIndex((e, i) => e !== newValue[i])
+  //       if(newValue.length !== oldValue.length) {this.selected = newValue}
+  //       let editItem = []
+  //       newValue.forEach((e, i) => {if(e !== oldValue[i]) {editItem.push(i, oldValue[i], e)}})
+  //       if(editItem.length > 0) {
+  //         let [idx, oldElem, newElem] = editItem
+  //           console.log("newElem = ", newElem)
+
+  //         //   this.RowsInColsItem[this.RowsInColsItem.indexOf(oldElem)] = newElem
+  //           this.items[this.items.indexOf(oldElem)] = newElem
+  //           // this.selected.splice(idx, 1, newElem)
+  //           this.selected = newValue
+  //           // this.outItems(this.items)
+  //       }
+  //       // !isNaN(value) ? value = Number(value.replace(',', '.')) : null
+
+  //     },
+  //   deep: true
+  // },
+
+
+
+
+
+    // outsideSelect: {
+    //   handler(val) {val.forEach((e, i) =>
+    //     this.selected[i] = e
+    //   )},
+    //   deep: true,
+    // }
+
+    // outsideSelect(newValue, oldValue) {
+    //     console.log("newValue = ", [...newValue])
+    //     console.log("oldValue = ", [...oldValue])
+    // },
+
+
+  //   outsideSelect(newValue, oldValue) {
+  //     // deep: true,
+  //     console.log(newValue, oldValue);
+  // },
+
+    // 'RowsInColsItem.length'() {this.items = this.RowsInColsItem.slice()},
+    // 'outsideSelect.length'() {this.selected = val.slice()},
+
+    // RowsInColsItem: {
+    //   handler(val) {val.forEach((e, i) =>
+    //       this.items[i] = e
+    //     )},
+    //   deep: true,
+    //   immediate: true
+    //   },
+
+    // outsideSelect: {
     //   handler(val) {val.forEach((e, i) =>
     //     this.selected[i] = e
     //   )},
@@ -241,16 +305,16 @@ data () {
     // immediate: true
     // },
 
-    items: {
-      handler(val) {val.forEach((e, i) =>
-        this.selected[i] = e
-      )},
-      deep: true,
-      immediate: true
-    },
+    // items: {
+    //   handler(val) {val.forEach((e, i) =>
+    //     this.selected[i] = e
+    //   )},
+    //   deep: true,
+    //   immediate: true
+    // },
 
 
-    // manualSelects: {
+    // outsideSelect: {
     //   handler(val) {
     //     this.selected = val.slice()
     //     console.log("val = ", this.columnKey, val.slice())
